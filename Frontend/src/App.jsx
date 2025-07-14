@@ -5,6 +5,7 @@ import Category from './Pages/Category.jsx';
 import ContactUs from './Pages/ContactUs.jsx';
 import CartPage from './Pages/CartPage.jsx';
 import TrackOrder from './Pages/TrackOrder.jsx';
+import Productdetails  from './Pages/Productdetails.jsx'; 
 
 
 function App(){
@@ -18,6 +19,8 @@ function App(){
           <Route path="/aboutus" element={<AboutUs />} />
           <Route path="/cartpage" element={<CartPage />} />
           <Route path="/trackorder" element={<TrackOrder />} />
+          <Route path="/productdetails" element={<Productdetails />} />
+          
         </Routes>
       </BrowserRouter>
     </div>
