@@ -8,6 +8,7 @@ import TrackOrder from './Pages/TrackOrder.jsx';
 import Productdetails  from './Pages/Productdetails.jsx'; 
 import SellerOnBoarding from './Pages/SellerOnBoarding.jsx';
 import SellerForm from './Pages/SellerForm.jsx';
+import Dashboard from './Pages/Dashboard.jsx';
 
 
 function App(){
@@ -24,6 +25,7 @@ function App(){
           <Route path="/productdetails" element={<Productdetails />} />
           <Route path="/seller-boarding" element={<SellerOnBoarding />} />
           <Route path="/sellerform" element={<SellerForm />} />
+          <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
       </BrowserRouter>
     </div>
