@@ -10,6 +10,7 @@ import Productdetails  from './Pages/Productdetails.jsx';
 import SellerOnBoarding from './Pages/SellerOnBoarding.jsx';
 import SellerForm from './Pages/SellerForm.jsx';
 import Dashboard from './Pages/Dashboard.jsx';
+import SecureCheckout from './Pages/SecureCheckout.jsx';
 
 import AboutUs from './Pages/AboutUs.jsx';
 
@@ -28,6 +29,7 @@ function App(){
           <Route path="/sellerform" element={<SellerForm />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/about" element={<AboutUs />} />
+          <Route path="/checkout" element={<SecureCheckout />} />
         </Routes>
       </BrowserRouter>
     </div>
