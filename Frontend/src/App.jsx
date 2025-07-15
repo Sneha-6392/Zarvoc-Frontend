@@ -7,7 +7,6 @@ import CartPage from './Pages/CartPage.jsx';
 import TrackOrder from './Pages/TrackOrder.jsx';
 import AboutUs from './Pages/AboutUs.jsx';
 
-
 function App(){
   return (
     <div>
