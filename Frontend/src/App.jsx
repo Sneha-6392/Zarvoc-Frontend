@@ -1,4 +1,5 @@
 import React from 'react';
+import './index.css';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import LandingPage from './Pages/LandingPage.jsx';
 import Category from './Pages/Category.jsx';
@@ -14,10 +15,10 @@ function App(){
         <Routes>
           <Route path="/category" element={<Category />} />
           <Route path="/" element={<LandingPage />} />
-          <Route path="/contactus" element={<ContactUs />} />
+          <Route path="/contact" element={<ContactUs />} />
           <Route path="/cartpage" element={<CartPage />} />
           <Route path="/trackorder" element={<TrackOrder />} />
-          <Route path="/aboutus" element={<AboutUs />} />
+          <Route path="/about" element={<AboutUs />} />
         </Routes>
       </BrowserRouter>
     </div>

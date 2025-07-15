@@ -1,124 +1,128 @@
-import React, { useRef, useState } from "react";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const products = [
   {
-    name: "Apple",
-    desc: "Fresh, juicy and clean apples, great for health.",
-    price: "₹80 / Kg",
-    img: "https://i.pinimg.com/736x/87/83/d1/8783d12fc288892db42628034db147ae.jpg",
+    title:
+      "TheGiftKart Shockproof Crystal Clear Back Cover Case for Mi Redmi 13 5G / Poco M6 Plus 5G",
+    mainImage:
+      "https://www.exoticase.com/cdn/shop/files/KeepCool-Camera-Protect-MagSafe-iPhone-Case-Exoticase-For-iPhone-16-Pro-Max-Purple-5_800x.jpg?v=1727357376",
+    price: 199,
+    mrp: 999,
+    smallImages: [
+      "https://www.exoticase.com/cdn/shop/files/KeepCool-Camera-Protect-MagSafe-iPhone-Case-Exoticase-For-iPhone-16-Pro-Max-Brown-9_800x.jpg?v=1727357396",
+      "https://www.exoticase.com/cdn/shop/files/KeepCool-Camera-Protect-MagSafe-iPhone-Case-Exoticase-For-iPhone-16-Pro-Max-Pink-10_800x.jpg?v=1727357401",
+      "https://www.exoticase.com/cdn/shop/files/KeepCool-Camera-Protect-MagSafe-iPhone-Case-Exoticase-For-iPhone-16-Pro-Max-Dark-Green-8_800x.jpg?v=1727357391",
+      "https://www.exoticase.com/cdn/shop/files/KeepCool-Camera-Protect-MagSafe-iPhone-Case-Exoticase-For-iPhone-16-Pro-Max-Sky-Blue-4_800x.jpg?v=1727357370",
+    ],
+    heading: "Keep shopping for",
   },
   {
-    name: "Milk",
-    desc: "Full cream fresh milk for everyday needs.",
-    price: "₹60 / ltr",
-    img: "https://i.pinimg.com/736x/36/3a/df/363adfbd007456f62197489f96a8b8f9.jpg",
+    title: "YELONA Gorilla Grip Durable Kitchen Cutting Board Set of 3",
+    mainImage:
+      "https://s.alicdn.com/@sc04/kf/A72985e53e4294e76ac33d971b3edef0f8.jpg_720x720q50.jpg",
+    price: 749,
+    mrp: 1999,
+    smallImages: [
+      "https://s.alicdn.com/@sc04/kf/Ha69f187a2fb949eb9a0eddd522bd8ba48.jpg_720x720q50.jpg",
+      "https://s.alicdn.com/@sc04/kf/H3eddaab0557346c9942fc8805e662606M.jpg_720x720q50.jpg",
+      "https://s.alicdn.com/@sc04/kf/Hb9d41cbe8ba34062a6518fac4f436742D.jpg_720x720q50.jpg",
+      "https://s.alicdn.com/@sc04/kf/H5f9f7a4b29a247baa7508719a8a1d482z.png_720x720q50.jpg",
+    ],
+    heading: "Up to 60% off | Top kitchen essentials available nearby",
   },
   {
-    name: "Clothes",
-    desc: "High Quality Fabric, Comfortable And Stylish.",
-    price: "₹599 / ₹20000",
-    img: "https://i.pinimg.com/736x/d3/e5/ff/d3e5ff3d9c73c7ebd9956f56a5dcbdf4.jpg",
+    title:
+      "eightone Women Floral Print Cotton Midi Dress, Short Sleeve, White with Yellow and Red Flowers",
+    mainImage:
+      "https://i.pinimg.com/736x/ff/aa/2d/ffaa2d1e18872b06e95a4d8b393e6e3a.jpg",
+    price: 670,
+    mrp: 1999,
+    smallImages: [
+      "https://i.pinimg.com/736x/b6/52/1e/b6521e1258ab935cf5b4eb705f02610e.jpg",
+      "https://i.pinimg.com/736x/ee/e8/8e/eee88e5ecfef1a0405edfecc4faa079a.jpg",
+      "https://i.pinimg.com/736x/0f/f8/75/0ff875c7298e459964264782da3a0ff1.jpg",
+      "https://i.pinimg.com/736x/cb/51/df/cb51dfe6680936620da07eb36f4b5b6b.jpg",
+    ],
+    heading: "Up to 75% off | Get casual ready from Small Businesses",
   },
   {
-    name: "Branded shoes",
-    desc: "Branded shoes, the perfect balance of fashion and functionality.",
-    price: "₹4500 / ₹1.5 lac",
-    img: "https://images.unsplash.com/photo-1556906781-9a412961c28c?q=80&w=687&auto=format&fit=crop",
-  },
-  {
-    name: "Laptop",
-    desc: "Laptops - High Performance Laptops",
-    price: "₹55,000",
-    img: "https://i.pinimg.com/736x/fe/f7/b3/fef7b3cbaeb59afc974ab04dd20741e6.jpg",
-  },
-  {
-    name: "Smartphone",
-    desc: "Latest smartphone, great camera quality.",
-    price: "₹25,000 / ₹2,000,00",
-    img: "https://i.pinimg.com/736x/ce/e9/a3/cee9a3b405bb308569bc26c76d8cfd63.jpg",
-  },
-  {
-    name: "Headphone",
-    desc: "High quality headphones, great sound experience.",
-    price: "₹6,500",
-    img: "https://plus.unsplash.com/premium_photo-1679513691485-711d030f7e94?q=80&w=400&auto=format&fit=crop",
-  },
-  {
-    name: "Notebook",
-    desc: "Ideal Notebook for Study, for All Subjects.",
-    price: "₹150",
-    img: "https://i.pinimg.com/736x/74/d3/e3/74d3e3226cd9e305c74a59439538a5ea.jpg",
+    title: "YELONA Gorilla Grip Durable Kitchen Cutting Board Set of 3",
+    mainImage:
+      "https://m.media-amazon.com/images/I/611fDFAhGgL._AC_SY350_.jpg",
+    price: 749,
+    mrp: 1999,
+    smallImages: [
+      "https://m.media-amazon.com/images/I/61eRCp5blLL._AC_SY110_.jpg",
+      "https://m.media-amazon.com/images/I/71y2aqXqVHL._AC_SY110_.jpg",
+      "https://m.media-amazon.com/images/I/61OKBU87U5L._AC_SY110_.jpg",
+      "https://m.media-amazon.com/images/I/611fDFAhGgL._AC_SY110_.jpg",
+    ],
+    heading: "Pick up where you left off",
   },
 ];
 
-const BestSellers = () => {
-  const containerRef = useRef(null);
-  const [scrollIndex, setScrollIndex] = useState(0);
-  const cardWidth = 290;
-  const visibleCards = 4;
+const ProductGrid = () => {
+  const navigate = useNavigate();
 
-  const scroll = (dir) => {
-    const maxIndex = products.length - visibleCards;
-    let newIndex = scrollIndex + dir;
-    if (newIndex < 0) newIndex = 0;
-    if (newIndex > maxIndex) newIndex = maxIndex;
-    setScrollIndex(newIndex);
-    if (containerRef.current) {
-      containerRef.current.style.transform = `translateX(-${
-        newIndex * cardWidth
-      }px)`;
-    }
+  const handleCardClick = (product) => {
+    const query = new URLSearchParams({
+      title: product.title,
+      mainImage: product.mainImage,
+      price: product.price,
+      mrp: product.mrp,
+      smallImages: product.smallImages.join(","),
+    }).toString();
+    navigate(`/product_detail?${query}`);
   };
 
   return (
-    <section className="px-4 py-6 relative overflow-hidden">
-      <h2 className="text-2xl font-semibold mb-4 text-left">Best Sellers</h2>
-      <div className="relative">
-        <div
-          ref={containerRef}
-          className="flex gap-6 transition-transform duration-300 ease-in-out"
-        >
-          {products.map((item, index) => (
-            <article
-              key={index}
-              className="min-w-[270px] max-w-xs bg-white rounded-lg shadow-md overflow-hidden flex-shrink-0"
-              tabIndex={0}
-            >
+    <div className="bg-gray-100 px-4 py-6 font-inter">
+      <h2 className="text-2xl font-semibold mb-4 text-emerald-700">
+        Top Picks For You
+      </h2>
+      <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+        {products.map((product, index) => (
+          <div
+            key={index}
+            className="min-w-[18rem] bg-white rounded-lg shadow-md p-4 cursor-pointer hover:scale-[1.01] hover:-translate-y-1 transition-transform flex flex-col justify-between"
+            onClick={() => handleCardClick(product)}
+          >
+            <div className="h-[4.5rem] overflow-hidden mb-2">
+              <h3 className="font-semibold text-lg">{product.heading}</h3>
+            </div>
+            <div className="flex items-center justify-center h-48 mb-4">
               <img
-                src={item.img}
-                alt={item.name}
-                className="w-full h-48 object-cover"
-                loading="lazy"
+                src={product.mainImage}
+                alt="Product"
+                className="max-w-full max-h-full object-contain rounded-md shadow-sm"
               />
-              <div className="p-4">
-                <h3 className="text-lg font-semibold">{item.name}</h3>
-                <p className="text-sm text-gray-600">{item.desc}</p>
-                <div className="mt-2 font-medium text-emerald-700">
-                  {item.price}
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-
-        {/* Navigation Buttons */}
-        <button
-          onClick={() => scroll(-1)}
-          className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border rounded-full shadow p-2 z-10 hover:bg-gray-200"
-          aria-label="Previous"
-        >
-          ←
-        </button>
-        <button
-          onClick={() => scroll(1)}
-          className="absolute right-0 top-1/2 -translate-y-1/2 bg-white border rounded-full shadow p-2 z-10 hover:bg-gray-200"
-          aria-label="Next"
-        >
-          →
-        </button>
+            </div>
+            <div className="text-lg font-bold text-gray-900 mb-2">
+              ₹{product.price}
+              <sup className="text-xs align-super">00</sup>
+              <span className="text-sm text-gray-500 line-through font-normal ml-1">
+                M.R.P: ₹{product.mrp}.00
+              </span>
+            </div>
+            <div className="flex gap-2 flex-wrap items-center h-10 mb-4">
+              {product.smallImages.map((img, i) => (
+                <img
+                  key={i}
+                  src={img}
+                  alt={`small-${i}`}
+                  className="w-10 h-10 rounded-md border border-gray-200"
+                />
+              ))}
+            </div>
+            <span className="text-sm text-blue-600 hover:text-blue-700 mt-auto">
+              See more
+            </span>
+          </div>
+        ))}
       </div>
-    </section>
+    </div>
   );
 };
 
-export default BestSellers;
+export default ProductGrid;
