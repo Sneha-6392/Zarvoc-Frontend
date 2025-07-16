@@ -1,6 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
+  const navigate = useNavigate();
   return (
     <footer className="bg-[#172337] text-white font-sans">
       <div className="flex flex-wrap justify-between px-10 pt-8 pb-4 border-b border-[#2b3642]">
@@ -8,8 +11,25 @@ const Footer = () => {
         <div className="min-w-[160px] mb-6">
           <h4 className="text-sm text-[#878787] mb-3">ABOUT</h4>
           <div className="text-xs leading-6">
-            <div>Contact Us</div>
-            <div>About Us</div>
+
+
+            {/* <div>Contact Us</div> */}
+
+
+            <div
+              onClick={() => navigate('/contact')}
+              className="cursor-pointer hover:underline"
+            >
+              Contact Us
+            </div>
+
+
+            <div
+              onClick={() => navigate('/about')}
+              className="cursor-pointer hover:underline"
+            >
+              About Us
+            </div>
             <div>Careers</div>
             <div>SuperMarket Stories</div>
             <div>Press</div>
@@ -18,14 +38,46 @@ const Footer = () => {
         </div>
 
         {/* GROUP COMPANIES */}
-        <div className="min-w-[160px] mb-6">
+        {/* <div className="min-w-[160px] mb-6">
           <h4 className="text-sm text-[#878787] mb-3">GROUP COMPANIES</h4>
           <div className="text-xs leading-6">
             <div>Myntra</div>
             <div>Cleartrip</div>
             <div>Shopsy</div>
           </div>
+        </div> */}
+
+
+        <div className="min-w-[160px] mb-6">
+          <h4 className="text-sm text-[#878787] mb-3">GROUP COMPANIES</h4>
+          <div className="text-xs leading-6">
+            <a
+              href="https://www.myntra.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block hover:underline"
+            >
+              Myntra
+            </a>
+            <a
+              href="https://www.cleartrip.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block hover:underline"
+            >
+              Cleartrip
+            </a>
+            <a
+              href="https://www.shopsy.in"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block hover:underline"
+            >
+              Shopsy
+            </a>
+          </div>
         </div>
+
 
         {/* HELP */}
         <div className="min-w-[160px] mb-6">
@@ -85,7 +137,7 @@ const Footer = () => {
             Bengaluru, 560103,<br />
             Karnataka, India<br />
             CIN : U51109KA2012PTC066107<br />
-            Telephone: <a href="tel:044-45614700" className="text-[#2874f0]">044-45614700</a> / <a href="tel:044-67415800" className="text-[#2874f0]">044-67415800</a>
+            Telephone: <a href="tel:+91 6399003541" className="text-[#2874f0]">+91 6399003541</a> / <a href="tel:+91 7456063501" className="text-[#2874f0]">+91 7456063501</a>
           </div>
         </div>
       </div>
@@ -93,9 +145,11 @@ const Footer = () => {
       {/* Bottom Row */}
       <div className="flex flex-wrap justify-between items-center px-10 py-4 text-sm">
         <div className="flex flex-wrap gap-8">
-          <div className="flex items-center gap-2">
+
+          <Link to="/seller-boarding" className="flex items-center gap-2 cursor-pointer hover:underline">
             <span className="text-yellow-400 text-lg">&#128188;</span> Become a Seller
-          </div>
+          </Link>
+
           <div className="flex items-center gap-2">
             <span className="text-yellow-400 text-lg">&#11088;</span> Advertise
           </div>
@@ -106,7 +160,7 @@ const Footer = () => {
             <span className="text-yellow-400 text-lg">&#10067;</span> Help Center
           </div>
         </div>
-        <div className="text-[#878787]">© 2007-2025 SuperMarket.com</div>
+        <div className="text-[#878787]">© 2025 - 2027 SuperMarket.com</div>
         <div className="flex gap-1">
           <img src="https://img.icons8.com/color/36/000000/visa.png" alt="Visa" />
           <img src="https://img.icons8.com/color/36/000000/mastercard-logo.png" alt="Mastercard" />
