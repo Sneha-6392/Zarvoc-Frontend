@@ -146,7 +146,7 @@ const Footer = () => {
       <div className="flex flex-wrap justify-between items-center px-10 py-4 text-sm">
         <div className="flex flex-wrap gap-8">
 
-          <Link to="/seller-boarding" className="flex items-center gap-2 cursor-pointer hover:underline">
+          <Link to="/seller-onboarding" className="flex items-center gap-2 cursor-pointer hover:underline">
             <span className="text-yellow-400 text-lg">&#128188;</span> Become a Seller
           </Link>
 
