@@ -4,12 +4,8 @@ import { Link } from "react-router-dom";
 const Navbar = () => {
   const navItems = [
     {
-      label: "☰",
-      links: [
-        { href: "/", name: "Home" },
-        { href: "/about", name: "About Us" },
-        { href: "/contact", name: "Contact Us" },
-      ],
+      label: "Home",
+      href: "/",
     },
     {
       label: "Fashion",
@@ -51,13 +47,16 @@ const Navbar = () => {
 
   return (
     <nav className="bg-white w-full p-4 rounded-2xl shadow-md font-inter">
-      <div className="flex items-center justify-between gap-6 flex-wrap md:flex-nowrap">
+      {/* Top Section */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+        {/* Logo */}
         <div className="text-3xl font-bold text-blue-700 whitespace-nowrap">
           𝓩𝓪𝓻𝓿𝓸𝓬
         </div>
 
-        <div className="flex-1 w-full md:w-auto">
-          <div className="relative w-full max-w-2xl mx-auto md:mx-0">
+        {/* Search Bar - centered */}
+        <div className="w-full md:flex-1 flex justify-center">
+          <div className="relative w-full max-w-2xl">
             <input
               type="text"
               placeholder="Search for products, categories, or ideas..."
@@ -79,52 +78,60 @@ const Navbar = () => {
           </div>
         </div>
 
+        {/* Icons */}
         <div className="flex items-center gap-3 mt-4 md:mt-0">
           {[
             {
-              color: 'from-blue-500 to-purple-600',
+              to: "/welcomepage",
+              color: "from-blue-500 to-purple-600",
               iconPath:
-                'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z',
+                "M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 0115 0", // 👤 User
             },
             {
-              color: 'from-green-400 to-teal-500',
+              to: "/cartpage",
+              color: "from-green-400 to-teal-500",
               iconPath:
-                'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z',
+                "M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17a2 2 0 100 4 2 2 0 000-4z", // 🛒 Cart
             },
             {
-              color: 'from-pink-500 to-red-500',
+              to: "/notifications",
+              color: "from-pink-500 to-red-500",
               iconPath:
-                'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0a2 2 0 11-4 0m4 0h-4',
+                "M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0a2 2 0 11-4 0m4 0h-4", // 🔔 Bell
             },
           ].map((item, idx) => (
-            <button
-              key={idx}
-              className={`w-10 h-10 flex items-center justify-center rounded-full text-white bg-gradient-to-r ${item.color} hover:shadow-lg transition-transform hover:-translate-y-1`}
-            >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
+            <Link to={item.to} key={idx}>
+              <button
+                className={`w-10 h-10 flex items-center justify-center rounded-full text-white bg-gradient-to-r ${item.color} hover:shadow-lg transition-transform hover:-translate-y-1`}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d={item.iconPath}
-                />
-              </svg>
-            </button>
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d={item.iconPath}
+                  />
+                </svg>
+              </button>
+            </Link>
           ))}
         </div>
       </div>
-
+      {/* Bottom Nav Links */}
       <div className="mt-6">
         <div className="bg-gradient-to-r from-sky-400 to-blue-500 text-white text-center py-2 px-4 rounded-full font-semibold shadow-md hover:from-sky-500 hover:to-blue-600 cursor-pointer transition-colors duration-300">
           <ul className="flex flex-wrap justify-center items-center gap-10">
             {navItems.map((item, idx) => (
               <li key={idx} className="relative group inline-block mx-2">
-                <Link to={item.href || "#"} className="text-white hover:text-gray-200">
+                <Link
+                  to={item.href || "#"}
+                  className="text-white hover:text-gray-200"
+                >
                   {item.label} {item.links && "▾"}
                 </Link>
                 {item.links && (
@@ -132,7 +139,7 @@ const Navbar = () => {
                     {item.links.map((sub, subIdx) => (
                       <li key={subIdx} className="py-1">
                         <a href="#" className="hover:text-blue-500">
-                          {typeof sub === 'string' ? sub : sub.name}
+                          {typeof sub === "string" ? sub : sub.name}
                         </a>
                       </li>
                     ))}
