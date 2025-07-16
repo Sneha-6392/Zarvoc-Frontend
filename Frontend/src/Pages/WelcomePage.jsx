@@ -13,7 +13,7 @@ function WelcomePage() {
     if (type === 'seller') {
       navigate('/seller-onboarding');
     } else {
-      navigate('/cart');
+      navigate('/login');
     }
   };
 
