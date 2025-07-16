@@ -14,7 +14,7 @@ import SellerForm from './Pages/SellerForm.jsx';
 import Dashboard from './Pages/Dashboard.jsx';
 import SecureCheckout from './Pages/SecureCheckout.jsx';
 import WelcomePage from './Pages/WelcomePage.jsx';
-
+import Login from './Pages/Login.jsx';
 import AboutUs from './Pages/AboutUs.jsx';
 
 function ScrollToTop() {
@@ -45,6 +45,7 @@ function App() {
           <Route path="/about" element={<AboutUs />} />
           <Route path="/checkout" element={<SecureCheckout />} />
           <Route path="/welcomepage" element={<WelcomePage />} />
+          <Route path="/login" element={<Login />} />
         </Routes>
       </BrowserRouter>
     </div>
