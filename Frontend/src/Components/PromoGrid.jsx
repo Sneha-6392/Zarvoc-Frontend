@@ -2,7 +2,8 @@ import React from "react";
 
 const PromoGrid = () => {
   return (
-    <div className="p-5 bg-gray-100 min-h-screen font-sans">
+    <div className="p-5 bg-gray-100 font-sans">
+
       <div className="max-w-[1500px] mx-auto grid gap-5 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-[200px]">
         
         {/* Banner 1 - Large wide banner */}
