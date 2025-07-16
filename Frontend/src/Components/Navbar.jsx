@@ -51,13 +51,16 @@ const Navbar = () => {
 
   return (
     <nav className="bg-white w-full p-4 rounded-2xl shadow-md font-inter">
-      <div className="flex items-center justify-between gap-6 flex-wrap md:flex-nowrap">
+      {/* Top Section */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+        {/* Logo */}
         <div className="text-3xl font-bold text-blue-700 whitespace-nowrap">
           𝓩𝓪𝓻𝓿𝓸𝓬
         </div>
 
-        <div className="flex-1 w-full md:w-auto">
-          <div className="relative w-full max-w-2xl mx-auto md:mx-0">
+        {/* Search Bar - centered */}
+        <div className="w-full md:flex-1 flex justify-center">
+          <div className="relative w-full max-w-2xl">
             <input
               type="text"
               placeholder="Search for products, categories, or ideas..."
@@ -79,22 +82,20 @@ const Navbar = () => {
           </div>
         </div>
 
+        {/* Icons */}
         <div className="flex items-center gap-3 mt-4 md:mt-0">
           {[
             {
               color: 'from-blue-500 to-purple-600',
-              iconPath:
-                'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z',
+              iconPath: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z',
             },
             {
               color: 'from-green-400 to-teal-500',
-              iconPath:
-                'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z',
+              iconPath: 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z',
             },
             {
               color: 'from-pink-500 to-red-500',
-              iconPath:
-                'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0a2 2 0 11-4 0m4 0h-4',
+              iconPath: 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0a2 2 0 11-4 0m4 0h-4',
             },
           ].map((item, idx) => (
             <button
@@ -119,6 +120,7 @@ const Navbar = () => {
         </div>
       </div>
 
+      {/* Bottom Nav Links */}
       <div className="mt-6">
         <div className="bg-gradient-to-r from-sky-400 to-blue-500 text-white text-center py-2 px-4 rounded-full font-semibold shadow-md hover:from-sky-500 hover:to-blue-600 cursor-pointer transition-colors duration-300">
           <ul className="flex flex-wrap justify-center items-center gap-10">
