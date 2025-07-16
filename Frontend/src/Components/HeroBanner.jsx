@@ -34,8 +34,11 @@ const PromoSlider = () => {
         {slides.map((src, i) => (
           <SwiperSlide key={i} className="flex justify-center items-center">
             <div className="relative w-full h-[500px] flex justify-center items-center overflow-hidden">
-              <img src={src} alt={`Slide ${i + 1}`} className="w-full h-full object-cover object-top" />
-              <div className="absolute bottom-0 left-0 w-full h-28 pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%)' }}></div>
+              <img
+                src={src}
+                alt={`Slide ${i + 1}`}
+                className="w-full h-full object-cover object-top"
+              />
             </div>
           </SwiperSlide>
         ))}

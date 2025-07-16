@@ -99,7 +99,7 @@ const TrendingProducts = () => {
             >
               <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent rounded-md"></div>
               <div className="absolute bottom-4 left-4 right-4">
-                <h2 className="text-lg font-bold">{product.name}</h2>
+                <p className="text-lg text-gray-300">{product.name}</p>
                 <p className="text-sm text-gray-300">{product.desc}</p>
               </div>
             </div>
@@ -111,3 +111,5 @@ const TrendingProducts = () => {
 };
 
 export default TrendingProducts;
+
+

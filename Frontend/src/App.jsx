@@ -39,12 +39,12 @@ function App() {
           <Route path="/cartpage" element={<CartPage />} />
           <Route path="/trackorder" element={<TrackOrder />} />
           <Route path="/productdetails" element={<Productdetails />} />
-          <Route path="/seller-boarding" element={<SellerOnBoarding />} />
+          <Route path="/seller-onboarding" element={<SellerOnBoarding />} />
           <Route path="/sellerform" element={<SellerForm />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/about" element={<AboutUs />} />
           <Route path="/checkout" element={<SecureCheckout />} />
-          <Route path="/welcome" element={<WelcomePage />} />
+          <Route path="/welcomepage" element={<WelcomePage />} />
         </Routes>
       </BrowserRouter>
     </div>
