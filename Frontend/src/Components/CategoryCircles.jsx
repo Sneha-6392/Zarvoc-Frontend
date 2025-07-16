@@ -55,14 +55,6 @@ function CategoryCircles() {
   return (
     <section className="bg-gray-100 px-4 py-6 overflow-x-auto whitespace-nowrap">
       <div className="flex justify-center items-center gap-25 min-w-max">
-        {/* Optional brand image/logo placeholder */}
-        <div className="flex-shrink-0 hidden sm:block">
-          <img
-            src="https://placehold.co/100x100?text=Brand"
-            alt="Brand Logo"
-            className="w-20 h-20 object-contain rounded-full border"
-          />
-        </div>
 
         {categories.map((cat) => (
           <Link
