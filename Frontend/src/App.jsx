@@ -1,6 +1,8 @@
 import React from 'react';
 import './index.css';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+
 import LandingPage from './Pages/LandingPage.jsx';
 import Category from './Pages/Category.jsx';
 import ContactUs from './Pages/ContactUs.jsx';
@@ -11,13 +13,23 @@ import SellerOnBoarding from './Pages/SellerOnBoarding.jsx';
 import SellerForm from './Pages/SellerForm.jsx';
 import Dashboard from './Pages/Dashboard.jsx';
 import SecureCheckout from './Pages/SecureCheckout.jsx';
-
 import AboutUs from './Pages/AboutUs.jsx';
 
-function App(){
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
+
+function App() {
   return (
     <div>
       <BrowserRouter>
+        <ScrollToTop /> {/* ✅ Scroll fix added here */}
         <Routes>
           <Route path="/category" element={<Category />} />
           <Route path="/" element={<LandingPage />} />
@@ -33,7 +45,7 @@ function App(){
         </Routes>
       </BrowserRouter>
     </div>
-  )
+  );
 }
 
 export default App;
