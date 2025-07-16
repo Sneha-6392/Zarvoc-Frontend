@@ -1,5 +1,5 @@
 body {
-  background: #f7f8fa;
+  background: #f7faff;
   font-family: 'Segoe UI', Arial, sans-serif;
   margin: 0;
   padding: 0;
@@ -18,8 +18,8 @@ body {
 .tab {
   padding: 10px 24px;
   border-radius: 8px 8px 0 0;
-  background: #e9ecef;
-  color: #555;
+  background: #e9f3fd;
+  color: #1976d2;
   font-weight: 500;
   transition: background 0.2s, color 0.2s;
   cursor: pointer;
@@ -76,7 +76,7 @@ body {
 .form-group input,
 .form-group textarea {
   padding: 8px 10px;
-  border: 1px solid #b0bec5;
+  border: 1px solid #d1d5db;
   border-radius: 6px;
   font-size: 1rem;
   background: #f5faff;
@@ -87,7 +87,7 @@ body {
 
 .form-group input:focus,
 .form-group textarea:focus {
-  border: 1.5px solid #1976d2;
+  border: 1.2px solid #1976d2;
   background: #e3f2fd;
 }
 
@@ -124,7 +124,7 @@ body {
 
 .product-item {
   background: #f5faff;
-  border: 1px solid #b0bec5;
+  border: 1px solid #d1d5db;
   border-radius: 8px;
   padding: 18px 16px;
   margin-bottom: 18px;
