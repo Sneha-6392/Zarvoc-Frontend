@@ -13,11 +13,6 @@ import SellerOnBoarding from './Pages/SellerOnBoarding.jsx';
 import SellerForm from './Pages/SellerForm.jsx';
 import Dashboard from './Pages/Dashboard.jsx';
 import SecureCheckout from './Pages/SecureCheckout.jsx';
-<<<<<<< HEAD
-import WelcomePage from './Pages/WelcomePage.jsx';
-
-=======
->>>>>>> 172e089a05b9a80c81c73749f15729e52066466e
 import AboutUs from './Pages/AboutUs.jsx';
 
 function ScrollToTop() {
