@@ -8,6 +8,7 @@
     "express": "^5.1.0",
     "leaflet": "^1.9.4",
     "mongoose": "^8.16.4",
+    "prop-type": "^0.0.1",
     "prop-types": "^15.8.1",
     "react-leaflet": "^5.0.0"
   }
