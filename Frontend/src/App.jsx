@@ -3,7 +3,7 @@ import './index.css';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 
-
+import 'leaflet/dist/leaflet.css';
 import LandingPage from './Pages/LandingPage.jsx';
 import Category from './Pages/Category.jsx';
 import ContactUs from './Pages/ContactUs.jsx';

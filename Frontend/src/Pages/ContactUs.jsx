@@ -1,39 +1,143 @@
 import React, { useState, useEffect } from "react";
+import PropTypes from 'prop-types';
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 import { Link } from "react-router-dom";
 import logo from "../assets/Zarvoc2.png";
+
+// Leaflet imports for map functionality
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// --- IMPORTANT: Fix for default marker icon not showing with Webpack ---
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+    iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+    shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+});
+// ----------------------------------------------------------------------
+
+// Custom component to handle map centering on the user's location
+function LocationMarker({ position }) {
+    const map = useMap();
+
+    useEffect(() => {
+        if (position.latitude && position.longitude) {
+            map.flyTo([position.latitude, position.longitude], map.getZoom());
+        }
+    }, [position, map]);
+
+    if (position.latitude && position.longitude) {
+        return (
+            <Marker position={[position.latitude, position.longitude]}>
+                <Popup>Your Current Location</Popup>
+            </Marker>
+        );
+    }
+    return null;
+}
+
+// Add PropTypes validation for the LocationMarker component
+LocationMarker.propTypes = {
+    position: PropTypes.shape({
+        latitude: PropTypes.number,
+        longitude: PropTypes.number,
+    }).isRequired,
+};
 
 export default function ContactUs() {
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState("");
   const [faqEmail, setFaqEmail] = useState("");
   const [faqMessage, setFaqMessage] = useState("");
+  const [userLocation, setUserLocation] = useState({
+    latitude: null,
+    longitude: null,
+    error: null,
+  });
+  // New state to hold the address string for the input field, including coordinates
+  const [addressInput, setAddressInput] = useState("");
+
+  const defaultMapCenter = [12.9716, 77.5946]; // Coordinates for Bengaluru, India (Zarvoc HQ)
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 2000);
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setUserLocation({
+            latitude,
+            longitude,
+            error: null,
+          });
+          // Update the address input field with the fetched coordinates
+          setAddressInput(`Lat: ${latitude.toFixed(6)}, Lon: ${longitude.toFixed(6)}`);
+        },
+        (error) => {
+          console.error("Error fetching location:", error);
+          setUserLocation((prev) => ({
+            ...prev,
+            error: "Unable to retrieve your location. Please enable location services and refresh.",
+          }));
+          // Fallback to default map center and clear address input
+          setUserLocation((prev) => ({
+              ...prev,
+              latitude: defaultMapCenter[0],
+              longitude: defaultMapCenter[1],
+          }));
+          setAddressInput(""); // Clear address input on error
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    } else {
+      setUserLocation((prev) => ({
+        ...prev,
+        error: "Geolocation is not supported by your browser.",
+      }));
+      // Fallback to default map center and clear address input
+      setUserLocation((prev) => ({
+          ...prev,
+          latitude: defaultMapCenter[0],
+          longitude: defaultMapCenter[1],
+      }));
+      setAddressInput(""); // Clear address input if geolocation not supported
+    }
+
     return () => clearTimeout(timer);
-  }, []);
+  }, []); // Run only once on mount
 
   const onSubmit = async (event) => {
     event.preventDefault();
     setResult("Sending...");
+
     const formData = new FormData(event.target);
     formData.append("access_key", "0accc7d5-adab-43a4-a5b9-b90b7879c4dc");
+    // Ensure the address field from state is used, not just the HTML input's initial value
+    formData.set("address", addressInput);
 
-    const response = await fetch("https://api.web3forms.com/submit", {
-      method: "POST",
-      body: formData,
-    });
+    try {
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: formData,
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (data.success) {
-      setResult("Form Submitted Successfully ✅");
-      event.target.reset();
-    } else {
-      console.error("Error", data);
-      setResult("Something went wrong ❌");
+      if (data.success) {
+        setResult("Form Submitted Successfully ✅");
+        event.target.reset(); // This resets the HTML form fields
+        setAddressInput(""); // Manually clear the controlled address input
+      } else {
+        console.error("Error", data);
+        setResult("Something went wrong ❌");
+      }
+    } catch (err) {
+      console.error("Network or submission error:", err);
+      setResult("Submission failed due to a network error.");
     }
   };
 
@@ -45,19 +149,24 @@ export default function ContactUs() {
     formData.append("access_key", "0accc7d5-adab-43a4-a5b9-b90b7879c4dc");
     formData.append("email", faqEmail);
 
-    const response = await fetch("https://api.web3forms.com/submit", {
-      method: "POST",
-      body: formData,
-    });
+    try {
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: formData,
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (data.success) {
-      setFaqMessage("Submitted ✅");
-      setFaqEmail("");
-    } else {
-      console.error("Error", data);
-      setFaqMessage("Submission failed ❌");
+      if (data.success) {
+        setFaqMessage("Submitted ✅");
+        setFaqEmail("");
+      } else {
+        console.error("Error", data);
+        setFaqMessage("Submission failed ❌");
+      }
+    } catch (err) {
+      console.error("Network or FAQ submission error:", err);
+      setFaqMessage("Submission failed due to a network error.");
     }
   };
 
@@ -82,7 +191,7 @@ export default function ContactUs() {
             </p>
             <p className="text-sm text-gray-600">info@zarvoc.com</p>
             <p className="text-sm text-gray-600 mb-2">921-231-221</p>
-            <a href="#" className="text-blue-600 underline text-sm">Customer Support</a>
+            <a href="/support" className="text-blue-600 underline text-sm">Customer Support</a>
 
             <div className="mt-6 space-y-4">
               <div>
@@ -128,7 +237,9 @@ export default function ContactUs() {
               <input
                 type="text"
                 name="address"
-                placeholder="Enter your address"
+                placeholder={addressInput ? addressInput : "Enter your address or location will fill automatically"}
+                value={addressInput} // Control the input with state
+                onChange={(e) => setAddressInput(e.target.value)} // Allow user to edit if needed
                 className="w-full border rounded-lg px-4 py-2"
                 required
               />
@@ -163,8 +274,8 @@ export default function ContactUs() {
               )}
               <p className="text-xs text-center text-gray-500">
                 By contacting us, you agree to our{" "}
-                <a className="underline" href="#">Terms of service</a> and{" "}
-                <a className="underline" href="#">Privacy Policy</a>.
+                <a className="underline" href="/terms-of-service">Terms of service</a> and{" "}
+                <a className="underline" href="/privacy-policy">Privacy Policy</a>.
               </p>
             </form>
           </div>
@@ -174,20 +285,43 @@ export default function ContactUs() {
         <div className="bg-white py-10">
           <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div className="w-full h-full rounded-xl overflow-hidden">
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.6195134142135!2d77.68777847512216!3d12.93215878737963!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae13a8d37051e1%3A0x441b54d2e7912e06!2sEmbassy%20TechVillage!5e0!3m2!1sen!2sin!4v1752650865941!5m2!1sen!2sin"
-                width="100%"
-                height="350"
-                style={{ border: 0 }}
-                allowFullScreen=""
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Zarvoc Location"
-              ></iframe>
+              {userLocation.error && !userLocation.latitude ? (
+                <div className="flex items-center justify-center h-full bg-gray-200 text-gray-700 text-center p-4 rounded-xl">
+                  <p>{userLocation.error}</p>
+                  <p>The map is centered on Zarvoc Headquarters in Bengaluru.</p>
+                </div>
+              ) : (
+                <MapContainer
+                    center={userLocation.latitude && userLocation.longitude ? [userLocation.latitude, userLocation.longitude] : defaultMapCenter}
+                    zoom={13}
+                    scrollWheelZoom={true}
+                    style={{ height: '350px', width: '100%' }}
+                    key={`${userLocation.latitude}-${userLocation.longitude}`}
+                >
+                  <TileLayer
+                    attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  {userLocation.latitude && userLocation.longitude && (
+                      <LocationMarker position={userLocation} />
+                  )}
+                  {!userLocation.latitude && !userLocation.longitude && (
+                      <Marker position={defaultMapCenter}>
+                          <Popup>Zarvoc Headquarters (Bengaluru)</Popup>
+                      </Marker>
+                  )}
+                </MapContainer>
+              )}
             </div>
             <div>
               <h3 className="text-xl font-semibold mb-2">Our Location</h3>
               <h4 className="text-lg font-medium">Connecting Near and Far</h4>
+              {userLocation.latitude && userLocation.longitude && (
+                  <p className="mt-2 text-sm">
+                      Your current coordinates: <br />
+                      Latitude: {userLocation.latitude.toFixed(6)}, Longitude: {userLocation.longitude.toFixed(6)}
+                  </p>
+              )}
               <p className="mt-2 text-sm">
                 Zarvoc Inc. <br />
                 Buildings Alyssa, Begonia & Clove Embassy Tech Village, <br />
@@ -202,7 +336,7 @@ export default function ContactUs() {
         {/* FAQ Section */}
         <div className="bg-gray-100 py-10">
           <div className="max-w-5xl mx-auto px-6">
-            <h2 className="text-2xl font-semibold mb-6">FAQ</h2>
+            <h2 className="text-2xl font-semibold mb-6">Frequently Asked Questions (FAQ)</h2>
             <div className="mb-6">
               <h4 className="text-lg font-medium">Do you have any questions for us?</h4>
               <form className="mt-2 flex gap-4" onSubmit={onFaqSubmit}>
@@ -241,7 +375,7 @@ export default function ContactUs() {
                 q: "What features does Zarvoc offer for groups or communities?",
                 a: "Group buying, shared wishlists, referral rewards, and curated product collections are all available."
               }].map((item, index) => (
-                <details key={index} className="bg-white rounded-lg p-4 shadow">
+                <details key={`${item.q}-${index}`} className="bg-white rounded-lg p-4 shadow">
                   <summary className="cursor-pointer font-medium">{item.q}</summary>
                   <p className="mt-2 text-sm text-gray-600">{item.a}</p>
                 </details>
