@@ -37,6 +37,7 @@ import TrendingProducts from "../Components/TrendingProducts";
 import CustomerReviews from "../Components/CustomerReviews";
 import Footer from "../Components/Footer";
 import logo from "../assets/Zarvoc2.png"; // Ensure the path is correct
+import BrandMarquee from "./BrandMarquee";
 
 function LandingPage() {
   const [loading, setLoading] = useState(true);
@@ -59,9 +60,11 @@ function LandingPage() {
       <Navbar />
       <HeroBanner />
       <CategoryCircles />
-      <BestSellers />
+      <BestSellers />     
       <ProductGrid />
+      <BrandMarquee /> 
       <PromoGrid />
+           
       <TrendingProducts />
       <CustomerReviews />
       <Footer />
