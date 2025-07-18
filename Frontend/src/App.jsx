@@ -20,6 +20,7 @@ import AboutUs from './Pages/AboutUs.jsx';
 import BrandMarquee from './Pages/BrandMarquee.jsx';
 import EditProfile from './Pages/editprofile.jsx';
 import ProfilePage from './Pages/profilepage.jsx';
+import AuthPage from './Pages/AuthPage.jsx';
 function ScrollToTop() {
   const { pathname } = useLocation();
 
@@ -52,6 +53,7 @@ function App() {
           <Route path="/marque" element={<BrandMarquee />} />
           <Route path="/profile" element={<ProfilePage />} />  
           <Route path="/editprofile" element={<EditProfile />} /> 
+          <Route path="/auth" element={<AuthPage />} />
           
 
           
