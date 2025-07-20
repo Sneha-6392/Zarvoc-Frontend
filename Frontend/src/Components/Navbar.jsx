@@ -48,7 +48,7 @@ const Navbar = () => {
     },
     {
       label: "Toys",
-      href: "/category?cat=childrenToysProducts",
+      href: "/category?cat=Toys",
       links: ["Action Figures", "Dolls", "Puzzles", "Board Games"],
     },
     {
