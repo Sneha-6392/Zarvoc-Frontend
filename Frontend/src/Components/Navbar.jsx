@@ -3,10 +3,7 @@ import { Link } from "react-router-dom";
 
 const Navbar = () => {
   const navItems = [
-    {
-      label: "Home",
-      href: "/",
-    },
+    { label: "Home", href: "/" },
     {
       label: "Fashion",
       href: "/category?cat=fashionProducts",
@@ -22,27 +19,15 @@ const Navbar = () => {
       href: "/category?cat=furnitureProducts",
       links: ["Living Room", "Bedroom", "Kitchen", "Office", "Outdoor"],
     },
-    {
-      label: "Appliances",
-      href: "/category?cat=kitchenProducts",
-    },
+    { label: "Appliances", href: "/category?cat=kitchenProducts" },
     {
       label: "Toys",
       href: "/category?cat=childrenToysProducts",
       links: ["Action Figures", "Dolls", "Puzzles", "Board Games"],
     },
-    {
-      label: "Cosmetics",
-      href: "/category?cat=cosmeticProducts",
-    },
-    {
-      label: "Kilos",
-      href: "/category?cat=foodProducts",
-    },
-    {
-      label: "Sports",
-      href: "/category?cat=sportsProducts",
-    },
+    { label: "Cosmetics", href: "/category?cat=cosmeticProducts" },
+    { label: "Kilos", href: "/category?cat=foodProducts" },
+    { label: "Sports", href: "/category?cat=sportsProducts" },
   ];
 
   return (
@@ -54,7 +39,7 @@ const Navbar = () => {
           𝓩𝓪𝓻𝓿𝓸𝓬
         </div>
 
-        {/* Search Bar - centered */}
+        {/* Search Bar */}
         <div className="w-full md:flex-1 flex justify-center">
           <div className="relative w-full max-w-2xl">
             <input
@@ -85,19 +70,19 @@ const Navbar = () => {
               to: "/welcomepage",
               color: "from-blue-500 to-purple-600",
               iconPath:
-                "M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 0115 0", // 👤 User
+                "M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 0115 0",
             },
             {
               to: "/cartpage",
               color: "from-green-400 to-teal-500",
               iconPath:
-                "M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17a2 2 0 100 4 2 2 0 000-4z", // 🛒 Cart
+                "M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17a2 2 0 100 4 2 2 0 000-4z",
             },
             {
               to: "/notifications",
               color: "from-pink-500 to-red-500",
               iconPath:
-                "M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0a2 2 0 11-4 0m4 0h-4", // 🔔 Bell
+                "M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0a2 2 0 11-4 0m4 0h-4",
             },
           ].map((item, idx) => (
             <Link to={item.to} key={idx}>
@@ -122,25 +107,33 @@ const Navbar = () => {
           ))}
         </div>
       </div>
+
       {/* Bottom Nav Links */}
       <div className="mt-6">
-        <div className="bg-gradient-to-r from-sky-400 to-blue-500 text-white text-center py-2 px-4 rounded-full font-semibold shadow-md hover:from-sky-500 hover:to-blue-600 cursor-pointer transition-colors duration-300">
-          <ul className="flex flex-wrap justify-center items-center gap-10">
+        <div className="bg-gradient-to-r from-sky-400 to-blue-500 text-white text-center py-2 px-4 rounded-full font-semibold shadow-md">
+          <ul className="flex flex-wrap justify-center items-center gap-20">
             {navItems.map((item, idx) => (
-              <li key={idx} className="relative group inline-block mx-2">
+              <li key={idx} className="relative group inline-block">
                 <Link
                   to={item.href || "#"}
-                  className="text-white hover:text-gray-200"
+                  className="text-white hover:text-gray-200 flex items-center"
                 >
-                  {item.label} {item.links && "▾"}
+                  {item.label} {item.links && <span className="ml-1">▾</span>}
                 </Link>
+
                 {item.links && (
-                  <ul className="absolute hidden group-hover:block bg-white text-gray-800 mt-2 rounded-md shadow-lg z-10 py-2 px-3 text-left min-w-[10rem]">
+                  <ul className="absolute left-0 mt-2 bg-white text-gray-800 rounded-md shadow-lg z-50 py-2 px-3 text-left min-w-[10rem] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                     {item.links.map((sub, subIdx) => (
-                      <li key={subIdx} className="py-1">
-                        <a href="#" className="hover:text-blue-500">
-                          {typeof sub === "string" ? sub : sub.name}
-                        </a>
+                      <li
+                        key={subIdx}
+                        className="py-2 px-3 hover:bg-gray-100 rounded"
+                      >
+                        <Link
+                          to={`${item.href}&sub=${encodeURIComponent(sub)}`}
+                          className="block hover:text-blue-500"
+                        >
+                          {sub}
+                        </Link>
                       </li>
                     ))}
                   </ul>

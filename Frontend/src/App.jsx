@@ -4,7 +4,7 @@ import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 
 import LandingPage from './Pages/LandingPage.jsx';
-import Category from './Pages/Category.jsx';
+import CategoryProducts from './Pages/CategoryProducts.jsx';
 import ContactUs from './Pages/ContactUs.jsx';
 import CartPage from './Pages/CartPage.jsx';
 import TrackOrder from './Pages/TrackOrder.jsx';
@@ -33,7 +33,7 @@ function App() {
       <BrowserRouter>
         <ScrollToTop /> {/* ✅ Scroll fix added here */}
         <Routes>
-          <Route path="/category" element={<Category />} />
+          <Route path="/category" element={<CategoryProducts />} />
           <Route path="/" element={<LandingPage />} />
           <Route path="/contact" element={<ContactUs />} />
           <Route path="/cartpage" element={<CartPage />} />
