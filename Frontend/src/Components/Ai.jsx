@@ -46,6 +46,7 @@ function Ai() {
     else if(transcript.includes("collection") || transcript.includes("collections") || transcript.includes("product") || transcript.includes("products") || transcript.includes("category") || transcript.includes("categories")){
       speak("opening category page")
       navigate("/category")
+      setShowSearch(false) // Close search on navigation
     }
     // General Navigation Commands
     else if(transcript.includes("home") || transcript.includes("homepage")){
@@ -63,7 +64,7 @@ function Ai() {
       navigate("/contact")
       setShowSearch(false) 
     }
-    else if(transcript.includes("cart") || transcript.includes("my cart")){
+    else if(transcript.includes("cart") || transcript.includes("my cart") || transcript.includes("shopping cart")){
       speak("opening your cart")
       navigate("/cartpage")
       setShowSearch(false) 
@@ -88,7 +89,7 @@ function Ai() {
       navigate("/sellerform")
       setShowSearch(false) 
     }
-    else if(transcript.includes("dashboard") || transcript.includes("my dashboard")){
+    else if(transcript.includes("dashboard") || transcript.includes("my dashboard") || transcript.includes("seller dashboard")){
       speak("opening your dashboard")
       navigate("/dashboard")
       setShowSearch(false) 
@@ -98,39 +99,44 @@ function Ai() {
       navigate("/checkout")
       setShowSearch(false) 
     }
-    else if(transcript.includes("welcome") || transcript.includes("welcome page")){
+    else if(transcript.includes("welcome") || transcript.includes("welcome page") || transcript.includes("zarvoc welcome")){
       speak("opening welcome page")
       navigate("/welcomepage")
       setShowSearch(false) 
     }
-    else if(transcript.includes("login") || transcript.includes("sign in")){
+    else if(transcript.includes("login") || transcript.includes("sign in") || transcript.includes("user login")){
       speak("opening login page")
       navigate("/login")
       setShowSearch(false) 
     }
-    else if(transcript.includes("brand marquee") || transcript.includes("marquee")){
+    else if(transcript.includes("brand marquee") || transcript.includes("marquee") || transcript.includes("brands")){
       speak("opening brand marquee page")
       navigate("/marque")
       setShowSearch(false) 
     }
-    else if(transcript.includes("profile") || transcript.includes("my profile")){
+    else if(transcript.includes("profile") || transcript.includes("my profile") || transcript.includes("view profile")){
       speak("opening your profile page")
       navigate("/profile")
       setShowSearch(false) 
     }
-    else if(transcript.includes("edit profile") || transcript.includes("update profile")){
+    else if(transcript.includes("edit profile") || transcript.includes("update profile") || transcript.includes("change profile")){
       speak("opening edit profile page")
       navigate("/editprofile")
       setShowSearch(false) 
     }
-    else if(transcript.includes("authentication") || transcript.includes("auth page") || transcript.includes("signup")){
+    else if(transcript.includes("authentication") || transcript.includes("auth page") || transcript.includes("signup") || transcript.includes("user signup")){
       speak("opening authentication page")
       navigate("/auth")
       setShowSearch(false) 
     }
-    else if(transcript.includes("seller login") || transcript.includes("seller auth")){
+    else if(transcript.includes("seller login") || transcript.includes("seller authentication") || transcript.includes("seller auth")){
       speak("opening seller login page")
       navigate("/sellerlogin")
+      setShowSearch(false) 
+    }
+    else if(transcript.includes("help center") || transcript.includes("support")){
+      speak("opening help center")
+      navigate("/helpcenter")
       setShowSearch(false) 
     }
     else {
@@ -160,7 +166,7 @@ function Ai() {
       <img 
         src={activeAi ? ai : AII} 
         alt="AI Assistant" 
-        className={`w-[100px] cursor-pointer ${activeAi ? 'translate-x-[10%] translate-y-[-10%] scale-125 ' : 'translate-x-[0] translate-y-[0] scale-100'} transition-transform`} 
+        className={`w-[100px] cursor-pointer ${activeAi ? 'translate-x-[10%] translate-y-[-10%] scale-150 ' : 'translate-x-[0] translate-y-[0] scale-100'} transition-transform`} 
         style={{
           filter: `${activeAi ? "drop-shadow(0px 0px 30px #00d2fc)" : "drop-shadow(0px 0px 0px black)"}`
         }} 

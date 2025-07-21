@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../Components/Navbar";
+import { HashLoader } from "react-spinners"; // Import HashLoader
 
 export default function ProfilePage() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true); // Add loading state
 
   const user = JSON.parse(localStorage.getItem("user")) || {
     fullName: "John Doe",
@@ -17,6 +19,15 @@ export default function ProfilePage() {
     profileImage: "", // default empty to trigger avatar logic
   };
 
+  useEffect(() => {
+    // Simulate a loading period for 3 seconds
+    const timer = setTimeout(() => {
+      setLoading(false); // Set loading to false after the simulated delay
+    }, 3000); // 3 seconds delay
+
+    return () => clearTimeout(timer); // Clean up the timer on component unmount
+  }, []);
+
   const getInitials = (name) => {
     const names = name.trim().split(" ");
     if (names.length === 1) return names[0][0].toUpperCase();
@@ -27,6 +38,15 @@ export default function ProfilePage() {
     localStorage.clear();
     navigate("/WelcomePage");
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-white">
+        {/* HashLoader component with customizable color and size */}
+        <HashLoader color="#3182CE" size={80} />
+      </div>
+    );
+  }
 
   return (
     <>

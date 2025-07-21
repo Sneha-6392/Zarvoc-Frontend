@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import { HashLoader } from 'react-spinners'; // Import HashLoader
 
 // Assuming you have these components in '../Components/'
 import Navbar from '../Components/Navbar';
@@ -24,12 +25,18 @@ const SellerLogin = () => {
     const [isSignup, setIsSignup] = useState(false);
     // State for displaying backend errors
     const [error, setError] = useState('');
-
     // State to trigger banner content animation
     const [bannerAnimate, setBannerAnimate] = useState(false);
+    // Add loading state for the component
+    const [loading, setLoading] = useState(true);
 
     // Effect to determine the initial active form/mode based on URL query parameter
     useEffect(() => {
+        // Simulate a loading period for 3 seconds
+        const loadTimer = setTimeout(() => {
+            setLoading(false); // Set loading to false after the simulated delay
+        }, 3000); // 3 seconds delay
+
         const urlParams = new URLSearchParams(window.location.search);
         const mode = urlParams.get('mode'); // Check for '?mode=signup' in URL
 
@@ -39,6 +46,8 @@ const SellerLogin = () => {
             setIsSignup(false);
         }
         setBannerAnimate(true); // Show initial banner content
+
+        return () => clearTimeout(loadTimer); // Clean up the loading timer
     }, []);
 
     // Effect to generate username when fullName changes (only for signup mode)
@@ -150,6 +159,16 @@ const SellerLogin = () => {
         console.log('Seller Google Login/Signup Failed');
         setError('Google authentication failed. Please try again.');
     };
+
+    // Show loader while loading is true
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-screen bg-white">
+                {/* HashLoader component with customizable color and size */}
+                <HashLoader color="#3182CE" size={80} />
+            </div>
+        );
+    }
 
     return (
         <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>

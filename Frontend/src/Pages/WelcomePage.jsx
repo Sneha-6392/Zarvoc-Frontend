@@ -1,12 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../Components/Navbar';
 import Footer from '../Components/Footer';
 import { User, Store } from 'lucide-react';
+import { HashLoader } from 'react-spinners'; // Import HashLoader
 
 function WelcomePage() {
   const [active, setActive] = useState('user');
+  const [loading, setLoading] = useState(true); // Add loading state
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Simulate a loading period for 3 seconds
+    const timer = setTimeout(() => setLoading(false), 3000); // Changed to 3000ms for 3 seconds
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleClick = (type) => {
     setActive(type);
@@ -16,6 +24,15 @@ function WelcomePage() {
       navigate('/login');
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-white">
+        {/* HashLoader component with customizable color and size */}
+        <HashLoader color="#3182CE" size={80} />
+      </div>
+    );
+  }
 
   return (
     <>
