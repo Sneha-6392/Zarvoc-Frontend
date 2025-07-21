@@ -1,51 +1,46 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Navbar from '../Components/Navbar';
-import { HashLoader } from "react-spinners"; // Import HashLoader
-
-const categoryMap = {
-  fashionProducts: 'fashion',
-  cosmeticProducts: 'cosmetic',
-  electronic: 'electronic',
-  furnitureProducts: 'furniture',
-  kitchenProducts: 'kitchen',
-  childrenToysProducts: 'childrenToys',
-  foodProducts: 'food',
-  sportsProducts: 'sports'
-};
+import { HashLoader } from "react-spinners";
 
 const Category = () => {
   const [searchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true); // <-- FIXED: Add loading state
+  const [loading, setLoading] = useState(true);
+
   const category = searchParams.get('cat');
 
   useEffect(() => {
-    setLoading(true); // Start loading when category changes
+    if (!category) {
+      setError("Invalid category");
+      setLoading(false);
+      return;
+    }
 
-    const timer = setTimeout(() => {
-      fetch(`http://localhost:3000/api/products/${category}`)
-        .then((res) => res.json())
-        .then((data) => {
-          setProducts(data);
-          setError(null);
-          setLoading(false); // Stop loading after data is set
-        })
-        .catch((err) => {
-          console.error(err);
-          setError('Failed to fetch products');
-          setLoading(false); // Stop loading on error too
-        });
-    }, 500); // Optional slight delay for visual effect
+    console.log("Category:", category); // 👈 debug
 
-    return () => clearTimeout(timer);
-  }, [category]); // <-- FIXED: wrap everything inside useEffect
+    setLoading(true);
+
+    fetch(`http://localhost:3000/api/products/${category}`)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Fetched products:", data); // 👈 debug
+        setProducts(data);
+        setError(null);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Fetch error:", err);
+        setError('Failed to fetch products');
+        setLoading(false);
+      });
+  }, [category]);
 
   const addToCart = async (id, name, price, image) => {
     const userId = localStorage.getItem('userId');
     if (!userId) {
-      console.log('You must be logged in to add items to cart.');
+      alert('You must be logged in to add items to cart.');
       return;
     }
 
@@ -60,13 +55,13 @@ const Category = () => {
 
       const data = await res.json();
       if (res.ok) {
-        console.log(data.msg || 'Added to cart!');
+        alert(data.msg || 'Added to cart!');
       } else {
-        console.log(data.msg || 'Failed to add to cart.');
+        alert(data.msg || 'Failed to add to cart.');
       }
     } catch (err) {
       console.error('Error:', err);
-      console.log('Server error');
+      alert('Server error');
     }
   };
 
@@ -86,31 +81,35 @@ const Category = () => {
     <>
       <Navbar />
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 p-6">
-        {products.map((product) => (
-          <div
-            key={product._id}
-            className="bg-white rounded-xl shadow-md p-4 transition hover:shadow-xl hover:scale-[1.02] duration-300 border"
-          >
-            <img
-              src={product.image}
-              alt={product.name}
-              className="w-full h-48 object-cover rounded-lg mb-4"
-            />
-            <h3 className="text-lg font-semibold text-gray-800 mb-1">{product.name}</h3>
-            <p className="text-sm text-gray-500 mb-2 line-clamp-2">{product.description}</p>
-            <div className="flex justify-between items-center">
-              <span className="text-black-600 font-bold text-lg">₹{product.price}</span>
-              <button
-                className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700 text-sm"
-                onClick={() =>
-                  addToCart(product._id, product.name, product.price, product.image)
-                }
-              >
-                Add to Cart
-              </button>
+        {products.length === 0 ? (
+          <p className="col-span-full text-center text-gray-500">No products found.</p>
+        ) : (
+          products.map((product) => (
+            <div
+              key={product._id}
+              className="bg-white rounded-xl shadow-md p-4 transition hover:shadow-xl hover:scale-[1.02] duration-300 border"
+            >
+              <img
+                src={product.image}
+                alt={product.name}
+                className="w-full h-48 object-cover rounded-lg mb-4"
+              />
+              <h3 className="text-lg font-semibold text-gray-800 mb-1">{product.name}</h3>
+              <p className="text-sm text-gray-500 mb-2 line-clamp-2">{product.description}</p>
+              <div className="flex justify-between items-center">
+                <span className="text-black-600 font-bold text-lg">₹{product.price}</span>
+                <button
+                  className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700 text-sm"
+                  onClick={() =>
+                    addToCart(product._id, product.name, product.price, product.image)
+                  }
+                >
+                  Add to Cart
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </>
   );
