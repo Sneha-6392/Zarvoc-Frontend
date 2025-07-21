@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 import { Link } from "react-router-dom";
-import logo from "../assets/Zarvoc2.png";
 import { HashLoader } from "react-spinners"; // Import HashLoader
 
 // Leaflet imports for map functionality
