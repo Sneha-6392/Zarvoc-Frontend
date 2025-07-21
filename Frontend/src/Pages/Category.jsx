@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Navbar from '../Components/Navbar';
 import { HashLoader } from "react-spinners";
+import Footer from '../Components/Footer';
 
 const Category = () => {
   const [searchParams] = useSearchParams();
@@ -111,6 +112,7 @@ const Category = () => {
           ))
         )}
       </div>
+      <Footer />
     </>
   );
 };
