@@ -1,408 +1,237 @@
-import React, { useState, useEffect } from "react";
-import PropTypes from 'prop-types';
-import Navbar from "../Components/Navbar";
-import Footer from "../Components/Footer";
-import { Link } from "react-router-dom";
-import logo from "../assets/Zarvoc2.png";
-import { HashLoader } from "react-spinners"; // Import HashLoader
+import React, { useEffect, useState } from 'react';
+// Assuming Navbar, Footer, and logo are correctly imported and available
+import Navbar from '../Components/Navbar';
+import Footer from '../Components/Footer';
+import logo from '../assets/Zarvoc2.png'; // Make sure this path is correct
 
-// Leaflet imports for map functionality
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
+/**
+ * Loader Component
+ * Displays a simple spinning loader.
+ */
+const Loader = () => (
+  <div className="flex flex-col items-center justify-center h-screen bg-white">
+    <div className="animate-spin rounded-full h-20 w-20 border-t-4 border-b-4 border-blue-500"></div>
+    <p className="mt-4 text-lg text-gray-700">Loading products...</p>
+  </div>
+);
 
-// --- IMPORTANT: Fix for default marker icon not showing with Webpack ---
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-    iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
-    iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
-    shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
-});
-// ----------------------------------------------------------------------
+/**
+ * ConfirmModal Component
+ * A custom modal for confirmation messages, replacing browser's confirm/alert.
+ * @param {object} props - Component props.
+ * @param {boolean} props.isOpen - Controls the visibility of the modal.
+ * @param {string} props.message - The message to display in the modal.
+ * @param {function} props.onConfirm - Callback function when 'Confirm' is clicked.
+ * @param {function} props.onCancel - Callback function when 'Cancel' is clicked or modal is closed.
+ * @param {string} props.title - Optional title for the modal.
+ */
+const ConfirmModal = ({ isOpen, message, onConfirm, onCancel, title = "Confirm Action" }) => {
+  if (!isOpen) return null;
 
-// Custom component to handle map centering on the user's location
-function LocationMarker({ position }) {
-    const map = useMap();
-
-    useEffect(() => {
-        if (position.latitude && position.longitude) {
-            map.flyTo([position.latitude, position.longitude], map.getZoom());
-        }
-    }, [position, map]);
-
-    if (position.latitude && position.longitude) {
-        return (
-            <Marker position={[position.latitude, position.longitude]}>
-                <Popup>Your Current Location</Popup>
-            </Marker>
-        );
-    }
-    return null;
-}
-
-// Add PropTypes validation for the LocationMarker component
-LocationMarker.propTypes = {
-    position: PropTypes.shape({
-        latitude: PropTypes.number,
-        longitude: PropTypes.number,
-    }).isRequired,
+  return (
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl max-w-sm w-full p-6 transform transition-all duration-300 scale-95 opacity-0 animate-scale-in">
+        <h3 className="text-xl font-semibold text-gray-900 mb-4">{title}</h3>
+        <p className="text-gray-700 mb-6">{message}</p>
+        <div className="flex justify-end space-x-3">
+          <button
+            onClick={onCancel}
+            className="px-5 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75 transition-colors duration-200"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-5 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75 transition-colors duration-200"
+          >
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 };
 
-export default function ContactUs() {
-  const [loading, setLoading] = useState(true); // Add loading state
-  const [result, setResult] = useState("");
-  const [faqEmail, setFaqEmail] = useState("");
-  const [faqMessage, setFaqMessage] = useState("");
-  const [userLocation, setUserLocation] = useState({
-    latitude: null,
-    longitude: null,
-    error: null,
-  });
-  // New state to hold the address string for the input field, including coordinates
-  const [addressInput, setAddressInput] = useState("");
+// CSS for the modal animation (add this to your main CSS file or a style block if not using a separate CSS file)
+// @keyframes scale-in {
+//   from { transform: scale(0.95); opacity: 0; }
+//   to { transform: scale(1); opacity: 1; }
+// }
+// .animate-scale-in {
+//   animation: scale-in 0.3s ease-out forwards;
+// }
 
-  const defaultMapCenter = [12.9716, 77.5946]; // Coordinates for Bengaluru, India (Zarvoc HQ)
 
+/**
+ * Dashboard Component
+ * Displays a list of products fetched from a local API, with options to delete.
+ */
+const Dashboard = () => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [productIdToDelete, setProductIdToDelete] = useState(null);
+  const [message, setMessage] = useState(''); // For success/error messages
+
+  /**
+   * Fetches products from the API on component mount.
+   */
   useEffect(() => {
-    // Set a timeout to hide the loader after 3 seconds
-    const timer = setTimeout(() => setLoading(false), 3000); // Changed to 3000ms
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch('http://localhost:3000/products');
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const data = await res.json();
+        setProducts(data);
+      } catch (err) {
+        console.error("Failed to fetch products:", err);
+        setMessage('❌ Failed to load products. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setUserLocation({
-            latitude,
-            longitude,
-            error: null,
-          });
-          // Update the address input field with the fetched coordinates
-          setAddressInput(`Lat: ${latitude.toFixed(6)}, Lon: ${longitude.toFixed(6)}`);
-        },
-        (error) => {
-          console.error("Error fetching location:", error);
-          setUserLocation((prev) => ({
-            ...prev,
-            error: "Unable to retrieve your location. Please enable location services and refresh.",
-          }));
-          // Fallback to default map center and clear address input
-          setUserLocation((prev) => ({
-              ...prev,
-              latitude: defaultMapCenter[0],
-              longitude: defaultMapCenter[1],
-          }));
-          setAddressInput(""); // Clear address input on error
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-      );
-    } else {
-      setUserLocation((prev) => ({
-        ...prev,
-        error: "Geolocation is not supported by your browser.",
-      }));
-      // Fallback to default map center and clear address input
-      setUserLocation((prev) => ({
-          ...prev,
-          latitude: defaultMapCenter[0],
-          longitude: defaultMapCenter[1],
-      }));
-      setAddressInput(""); // Clear address input if geolocation not supported
-    }
+    fetchProducts();
+  }, []); // Empty dependency array means this runs once on mount
 
-    return () => clearTimeout(timer);
-  }, []); // Run only once on mount
+  /**
+   * Handles the initiation of a product deletion.
+   * Opens the confirmation modal.
+   * @param {string} id - The ID of the product to be deleted.
+   */
+  const handleDeleteInitiate = (id) => {
+    setProductIdToDelete(id);
+    setShowConfirmModal(true);
+  };
 
-  const onSubmit = async (event) => {
-    event.preventDefault();
-    setResult("Sending...");
-
-    const formData = new FormData(event.target);
-    formData.append("access_key", "0accc7d5-adab-43a4-a5b9-b90b7879c4dc");
-    // Ensure the address field from state is used, not just the HTML input's initial value
-    formData.set("address", addressInput);
+  /**
+   * Executes the product deletion after user confirmation.
+   */
+  const handleDeleteConfirm = async () => {
+    setShowConfirmModal(false); // Close modal immediately
+    if (!productIdToDelete) return; // Should not happen if modal was opened correctly
 
     try {
-      const response = await fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        body: formData,
+      const res = await fetch(`http://localhost:3000/products/${productIdToDelete}`, {
+        method: 'DELETE',
       });
 
-      const data = await response.json();
-
-      if (data.success) {
-        setResult("Form Submitted Successfully ✅");
-        event.target.reset(); // This resets the HTML form fields
-        setAddressInput(""); // Manually clear the controlled address input
-      } else {
-        console.error("Error", data);
-        setResult("Something went wrong ❌");
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
       }
+
+      // No need to parse JSON if the backend doesn't return anything on delete
+      // await res.json(); // Uncomment if your backend sends a JSON response on DELETE
+
+      setMessage('✅ Product deleted successfully!');
+      // Update the state to remove the deleted product
+      setProducts(prev => prev.filter(product => product._id !== productIdToDelete));
     } catch (err) {
-      console.error("Network or submission error:", err);
-      setResult("Submission failed due to a network error.");
+      console.error("Failed to delete product:", err);
+      setMessage('❌ Failed to delete product. Please try again.');
+    } finally {
+      setProductIdToDelete(null); // Clear the ID after operation
+      // Optionally, clear message after some time
+      setTimeout(() => setMessage(''), 3000);
     }
   };
 
-  const onFaqSubmit = async (e) => {
-    e.preventDefault();
-    setFaqMessage("Sending...");
-
-    const formData = new FormData();
-    formData.append("access_key", "0accc7d5-adab-43a4-a5b9-b90b7879c4dc");
-    formData.append("email", faqEmail);
-
-    try {
-      const response = await fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setFaqMessage("Submitted ✅");
-        setFaqEmail("");
-      } else {
-        console.error("Error", data);
-        setFaqMessage("Submission failed ❌");
-      }
-    } catch (err) {
-      console.error("Network or FAQ submission error:", err);
-      setFaqMessage("Submission failed due to a network error.");
-    }
+  /**
+   * Cancels the product deletion process.
+   */
+  const handleDeleteCancel = () => {
+    setShowConfirmModal(false);
+    setProductIdToDelete(null);
   };
 
-  // Show loader while loading is true
+  // Display loader while data is being fetched
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-white">
-        {/* HashLoader component with customizable color and size */}
-        <HashLoader color="#3182CE" size={80} />
-      </div>
-    );
+    return <Loader />;
   }
 
   return (
-    <>
+    <div
+      className={`flex flex-col min-h-screen bg-gray-50 ${
+        products.length === 0 ? 'overflow-hidden' : 'overflow-y-auto'
+      }`}
+    >
       <Navbar />
-      <div className="bg-gray-50 text-gray-900 font-sans">
-        {/* Contact Form Section */}
-        <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
-            <h2 className="text-3xl font-semibold mb-4">Contact Us</h2>
-            <p className="mb-2">
-              Email, call, or complete the form to learn how Zarvoc can solve your messaging problem.
-            </p>
-            <p className="text-sm text-gray-600">info@zarvoc.com</p>
-            <p className="text-sm text-gray-600 mb-2">921-231-221</p>
-            <a href="/support" className="text-blue-600 underline text-sm">Customer Support</a>
-
-            <div className="mt-6 space-y-4">
-              <div>
-                <h4 className="font-semibold">Customer Support</h4>
-                <p className="text-sm text-gray-600">
-                  Our support team is available 24/7 to assist with technical or general questions.
-                </p>
-              </div>
-              <div>
-                <h4 className="font-semibold">Feedback and Suggestions</h4>
-                <p className="text-sm text-gray-600">
-                  We appreciate feedback and ideas. Your input helps us shape the future of Zarvoc.
-                </p>
-              </div>
-              <div>
-                <h4 className="font-semibold">Media Inquiries</h4>
-                <p className="text-sm text-gray-600">
-                  For media-related questions or partnerships, reach out to media@zarvoc.com
-                </p>
-              </div>
+      <main className="flex-1 px-4 py-8">
+        <div className="max-w-4xl mx-auto w-full">
+          {/* Display general messages (success/error) */}
+          {message && (
+            <div className={`p-3 mb-4 rounded-md text-center ${
+              message.startsWith('✅') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+            }`}>
+              {message}
             </div>
-          </div>
+          )}
 
-          <div className="bg-white shadow-md rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-4">Get in Touch</h3>
-            <form className="space-y-4" onSubmit={onSubmit}>
-              <div className="flex gap-4">
-                <input
-                  type="text"
-                  name="first_name"
-                  placeholder="First name"
-                  className="w-full border rounded-lg px-4 py-2"
-                  required
-                />
-                <input
-                  type="text"
-                  name="last_name"
-                  placeholder="Last name"
-                  className="w-full border rounded-lg px-4 py-2"
-                  required
-                />
-              </div>
-              <input
-                type="text"
-                name="address"
-                placeholder={addressInput ? addressInput : "Enter your address or location will fill automatically"}
-                value={addressInput} // Control the input with state
-                onChange={(e) => setAddressInput(e.target.value)} // Allow user to edit if needed
-                className="w-full border rounded-lg px-4 py-2"
-                required
-              />
-              <input
-                type="email"
-                name="email"
-                placeholder="Your email"
-                className="w-full border rounded-lg px-4 py-2"
-                required
-              />
-              <input
-                type="tel"
-                name="phone"
-                placeholder="Phone number"
-                className="w-full border rounded-lg px-4 py-2"
-              />
-              <textarea
-                name="message"
-                placeholder="How can we help?"
-                rows="4"
-                className="w-full border rounded-lg px-4 py-2"
-                required
-              ></textarea>
-              <button
-                type="submit"
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg w-full hover:bg-blue-700"
+          {products.length > 0 ? (
+            products.map(product => (
+              <div
+                key={product._id}
+                className="flex flex-col md:flex-row items-start bg-white border border-gray-300 rounded-xl shadow-sm p-6 mb-6"
               >
-                Submit
-              </button>
-              {result && (
-                <p className="text-center text-sm text-green-600 mt-2">{result}</p>
-              )}
-              <p className="text-xs text-center text-gray-500">
-                By contacting us, you agree to our{" "}
-                <a className="underline" href="/terms-of-service">Terms of service</a> and{" "}
-                <a className="underline" href="/privacy-policy">Privacy Policy</a>.
-              </p>
-            </form>
-          </div>
-        </div>
-
-        {/* Location Section */}
-        <div className="bg-white py-10">
-          <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            <div className="w-full h-full rounded-xl overflow-hidden">
-              {userLocation.error && !userLocation.latitude ? (
-                <div className="flex items-center justify-center h-full bg-gray-200 text-gray-700 text-center p-4 rounded-xl">
-                  <p>{userLocation.error}</p>
-                  <p>The map is centered on Zarvoc Headquarters in Bengaluru.</p>
+                <div className="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden mr-6 flex-shrink-0">
+                  {product.image ? (
+                    <img
+                      src={product.image}
+                      alt="Product"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-gray-500 font-medium text-sm text-center p-2">🚫 No Image Available</span>
+                  )}
                 </div>
-              ) : (
-                <MapContainer
-                    center={userLocation.latitude && userLocation.longitude ? [userLocation.latitude, userLocation.longitude] : defaultMapCenter}
-                    zoom={13}
-                    scrollWheelZoom={true}
-                    style={{ height: '350px', width: '100%' }}
-                    key={`${userLocation.latitude}-${userLocation.longitude}`}
-                >
-                  <TileLayer
-                    attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  />
-                  {userLocation.latitude && userLocation.longitude && (
-                      <LocationMarker position={userLocation} />
-                  )}
-                  {!userLocation.latitude && !userLocation.longitude && (
-                      <Marker position={defaultMapCenter}>
-                          <Popup>Zarvoc Headquarters (Bengaluru)</Popup>
-                      </Marker>
-                  )}
-                </MapContainer>
-              )}
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold mb-2">Our Location</h3>
-              <h4 className="text-lg font-medium">Connecting Near and Far</h4>
-              {userLocation.latitude && userLocation.longitude && (
-                  <p className="mt-2 text-sm">
-                    Your current coordinates: <br />
-                    Latitude: {userLocation.latitude.toFixed(6)}, Longitude: {userLocation.longitude.toFixed(6)}
+                <div className="flex-1 mt-4 md:mt-0">
+                  <p className="text-gray-800 font-semibold mb-2 text-lg">
+                    📝 {product.description}
                   </p>
-              )}
-              <p className="mt-2 text-sm">
-                Zarvoc Inc. <br />
-                Buildings Alyssa, Begonia & Clove Embassy Tech Village, <br />
-                Outer Ring Road, Devarabeesanahalli Village, <br />
-                Bengaluru, 560103, <br />
-                Karnataka, India
-              </p>
-            </div>
-          </div>
-        </div>
+                  <p className="text-green-600 font-bold mb-1 text-xl">💰 ₹{product.price}</p>
+                  <p className="text-gray-500 mb-2 text-base">📦 Amount: {product.amount}</p>
+                  <div className="flex gap-3 mt-4">
+                    <button
+                      onClick={() => handleDeleteInitiate(product._id)}
+                      className="bg-red-100 text-red-600 hover:bg-red-200 px-4 py-2 text-sm rounded-md font-medium transition-colors duration-200"
+                    >
+                      🗑 Delete
+                    </button>
+                    <button className="bg-blue-100 text-blue-700 hover:bg-blue-200 px-4 py-2 text-sm rounded-md font-medium transition-colors duration-200">
+                      🔗 Share
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-center text-red-600 font-medium text-lg py-20">
+              😔 No products available.
+            </p>
+          )}
 
-        {/* FAQ Section */}
-        <div className="bg-gray-100 py-10">
-          <div className="max-w-5xl mx-auto px-6">
-            <h2 className="text-2xl font-semibold mb-6">Frequently Asked Questions (FAQ)</h2>
-            <div className="mb-6">
-              <h4 className="text-lg font-medium">Do you have any questions for us?</h4>
-              <form className="mt-2 flex gap-4" onSubmit={onFaqSubmit}>
-                <input
-                  type="email"
-                  name="email"
-                  value={faqEmail}
-                  onChange={(e) => setFaqEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  className="flex-1 border rounded-lg px-4 py-2"
-                  required
-                />
-                <button
-                  type="submit"
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-                >
-                  Submit
-                </button>
-              </form>
-              {faqMessage && (
-                <p className="text-sm text-green-600 mt-2">{faqMessage}</p>
-              )}
-            </div>
-
-            <div className="space-y-4">
-              {[{
-                q: "What makes Zarvoc different from other e-commerce platforms?",
-                a: "Zarvoc stands out with its user-friendly interface, lightning-fast performance, and a carefully curated collection of quality products."
-              }, {
-                q: "How secure is shopping on Zarvoc?",
-                a: "We use industry-standard encryption and secure payment gateways to protect your personal and payment details."
-              }, {
-                q: "Can I personalize my Zarvoc experience?",
-                a: "Yes! Customize notifications, manage preferences, and track orders in your account."
-              }, {
-                q: "What features does Zarvoc offer for groups or communities?",
-                a: "Group buying, shared wishlists, referral rewards, and curated product collections are all available."
-              }].map((item, index) => (
-                <details key={`${item.q}-${index}`} className="bg-white rounded-lg p-4 shadow">
-                  <summary className="cursor-pointer font-medium">{item.q}</summary>
-                  <p className="mt-2 text-sm text-gray-600">{item.a}</p>
-                </details>
-              ))}
-            </div>
-          </div>
+          <button
+            className="w-full bg-gray-300 text-white text-lg font-semibold py-3 rounded-md opacity-70 cursor-not-allowed mt-4"
+            disabled
+          >
+            ➕ Add more item
+          </button>
         </div>
-
-        {/* CTA Section */}
-        <div className="bg-white py-12 text-center">
-          <h2 className="text-2xl font-bold mb-4">
-            Ready to experience the ease and excitement of shopping with Zarvoc?
-          </h2>
-          <div className="space-x-4">
-            <Link to="/">
-              <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
-                Get Started
-              </button>
-            </Link>
-          </div>
-        </div>
-      </div>
+      </main>
       <Footer />
-    </>
+
+      {/* Custom Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showConfirmModal}
+        title="Confirm Deletion"
+        message="Are you sure you want to delete this product? This action cannot be undone."
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+      />
+    </div>
   );
-}
+};
+
+export default Dashboard;
