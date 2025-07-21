@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { HashLoader } from "react-spinners"; // Import HashLoader
 
 export default function EditProfile() {
   const navigate = useNavigate();
 
+  const [loading, setLoading] = useState(true); // Add loading state
   const [user, setUser] = useState({
     profileImage: "",
     fullName: "",
@@ -17,10 +19,16 @@ export default function EditProfile() {
   });
 
   useEffect(() => {
-    const savedUser = JSON.parse(localStorage.getItem("user"));
-    if (savedUser) {
-      setUser(savedUser);
-    }
+    // Simulate a loading period for 3 seconds
+    const timer = setTimeout(() => {
+      const savedUser = JSON.parse(localStorage.getItem("user"));
+      if (savedUser) {
+        setUser(savedUser);
+      }
+      setLoading(false); // Set loading to false after the simulated delay
+    }, 3000); // 3 seconds delay
+
+    return () => clearTimeout(timer); // Clean up the timer on component unmount
   }, []);
 
   const handleChange = (e) => {
@@ -44,6 +52,16 @@ export default function EditProfile() {
     localStorage.setItem("user", JSON.stringify(user));
     navigate("/profile");
   };
+
+  // Show loader while loading is true
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-white">
+        {/* HashLoader component with customizable color and size */}
+        <HashLoader color="#3182CE" size={80} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-blue-50 to-blue-100 flex items-center justify-center px-4 py-10">

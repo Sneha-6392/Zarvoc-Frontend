@@ -1,6 +1,18 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { HashLoader } from 'react-spinners'; // Import HashLoader
+// Assuming you might have Navbar and Footer if this page is part of a larger app structure
+// import Navbar from '../Components/Navbar';
+// import Footer from '../Components/Footer';
 
 const TrackOrder = () => {
+  const [loading, setLoading] = useState(true); // Add loading state
+
+  useEffect(() => {
+    // Simulate a loading period for 3 seconds
+    const timer = setTimeout(() => setLoading(false), 3000); // Changed to 3000ms for 3 seconds
+    return () => clearTimeout(timer);
+  }, []);
+
   const orderSteps = [
     {
       label: 'Order Placed',
@@ -69,8 +81,19 @@ const TrackOrder = () => {
     },
   ];
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-white">
+        {/* HashLoader component with customizable color and size */}
+        <HashLoader color="#3182CE" size={80} />
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-gray-50 text-gray-800">
+    <div className="bg-gray-50 text-gray-800 min-h-screen">
+      {/* If Navbar is used, uncomment and import it */}
+      {/* <Navbar /> */}
       <div className="text-center py-6">
         <h1 className="text-3xl font-semibold">Track Your Order</h1>
         <p className="text-sm text-gray-500 mt-1">Home / Track Your Order</p>
@@ -146,6 +169,8 @@ const TrackOrder = () => {
           <p className="text-gray-500">We support online all days.</p>
         </div>
       </div>
+      {/* If Footer is used, uncomment and import it */}
+      {/* <Footer /> */}
     </div>
   );
 };

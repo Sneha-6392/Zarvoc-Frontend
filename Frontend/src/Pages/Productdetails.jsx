@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
-import logo from "../assets/Zarvoc2.png";
+import { HashLoader } from "react-spinners"; // Import HashLoader
+// import logo from "../assets/Zarvoc2.png"; // No longer needed for loader
 import "../Styles/Product.css";
 
 const ProductDetails = () => {
@@ -21,11 +22,19 @@ const ProductDetails = () => {
   const requiredFields = ["name", "category", "description", "amount", "price"];
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 2000);
+    // Set a timeout to hide the loader after 3 seconds
+    const timer = setTimeout(() => setLoading(false), 3000); // Changed to 3000ms for 3 seconds
+
     fetch("http://localhost:3000/api/products/")
       .then((res) => res.json())
-      .then((data) => setProducts(data))
+      .then((data) => {
+        setProducts(data);
+        // If data fetching is faster than 3 seconds, the timer will still run.
+        // If data fetching is slower, the loader will disappear once data is fetched.
+        // For a consistent 3-second display, we rely solely on the timer.
+      })
       .catch((err) => console.error("❌ Fetch error:", err));
+    
     return () => clearTimeout(timer);
   }, []);
 
@@ -78,7 +87,8 @@ const ProductDetails = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
-        <img src={logo} alt="Zarvoc Logo" className="w-40 h-40 animate-pulse" />
+        {/* HashLoader component with customizable color and size */}
+        <HashLoader color="#3182CE" size={80} />
       </div>
     );
   }

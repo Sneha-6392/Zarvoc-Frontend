@@ -1,17 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { HashLoader } from 'react-spinners'; // Import HashLoader
 
 const SecureCheckout = () => {
   const [selectedPayment, setSelectedPayment] = useState('');
   const [couponCode, setCouponCode] = useState('');
   const [upiId, setUpiId] = useState('');
+  const [loading, setLoading] = useState(true); // Add loading state
 
   const isPayButtonEnabled = selectedPayment !== '';
   const isCouponValid = couponCode.trim() !== '';
   const isUpiValid = upiId.trim() !== '';
 
+  useEffect(() => {
+    // Simulate a loading period for 3 seconds
+    const timer = setTimeout(() => {
+      setLoading(false); // Set loading to false after the simulated delay
+    }, 3000); // 3 seconds delay
+
+    return () => clearTimeout(timer); // Clean up the timer on component unmount
+  }, []);
+
   const handlePaymentSelect = (e) => {
     setSelectedPayment(e.target.value);
   };
+
+  // Show loader while loading is true
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-white">
+        {/* HashLoader component with customizable color and size */}
+        <HashLoader color="#3182CE" size={80} />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-200 text-gray-800 min-h-screen">
