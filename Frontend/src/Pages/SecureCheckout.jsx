@@ -29,7 +29,7 @@ const SecureCheckout = () => {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
         {/* HashLoader component with customizable color and size */}
-        <HashLoader color="#3182CE" size={80} />
+        <HashLoader color="#070A52" size={80} />
       </div>
     );
   }
