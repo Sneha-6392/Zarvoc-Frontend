@@ -2,14 +2,15 @@ import React from 'react';
 import './index.css';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
-
+import ShopProvider from './context/ShopContext.jsx'; // ✅ CONTEXT PROVIDER
 import 'leaflet/dist/leaflet.css';
+
 import LandingPage from './Pages/LandingPage.jsx';
 import Category from './Pages/Category.jsx';
 import ContactUs from './Pages/ContactUs.jsx';
 import CartPage from './Pages/CartPage.jsx';
 import TrackOrder from './Pages/TrackOrder.jsx';
-import Productdetails  from './Pages/Productdetails.jsx'; 
+import Productdetails from './Pages/Productdetails.jsx'; 
 import SellerOnBoarding from './Pages/SellerOnBoarding.jsx';
 import SellerForm from './Pages/SellerForm.jsx';
 import Dashboard from './Pages/Dashboard.jsx';
@@ -22,19 +23,20 @@ import EditProfile from './Pages/editprofile.jsx';
 import ProfilePage from './Pages/profilepage.jsx';
 import AuthPage from './Pages/AuthPage.jsx';
 import SellerAuthPage from './Pages/SellerAuthPage.jsx';
+import Ai from './Components/Ai.jsx';
+import HelpCenter from './Pages/HelpCenter.jsx';
+
 function ScrollToTop() {
   const { pathname } = useLocation();
-
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
-
   return null;
 }
 
 function App() {
   return (
-    <div>
+    <ShopProvider> {/* ✅ FIX: wrap entire app with context provider */}
       <BrowserRouter>
         <ScrollToTop /> 
         <Routes>
@@ -56,13 +58,11 @@ function App() {
           <Route path="/editprofile" element={<EditProfile />} /> 
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/sellerlogin" element={<SellerAuthPage />} />
-          
-
-          
-
+          <Route path="/helpcenter" element={<HelpCenter />} />
         </Routes>
+        <Ai />
       </BrowserRouter>
-    </div>
+    </ShopProvider>
   );
 }
 

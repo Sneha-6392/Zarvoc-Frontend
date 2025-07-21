@@ -38,6 +38,7 @@ import CustomerReviews from "../Components/CustomerReviews";
 import Footer from "../Components/Footer";
 import logo from "../assets/Zarvoc2.png"; // Ensure the path is correct
 import BrandMarquee from "./BrandMarquee";
+import Ai from "../Components/Ai";
 
 function LandingPage() {
   const [loading, setLoading] = useState(true);
@@ -67,6 +68,7 @@ function LandingPage() {
            
       <TrendingProducts />
       <CustomerReviews />
+      
       <Footer />
     </div>
   );
