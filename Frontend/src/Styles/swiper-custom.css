@@ -1,8 +1,8 @@
 .swiper-pagination-bullet {
-  background: #2f5793;
+  background: #070A52;
   opacity: 1;
 }
 .swiper-pagination-bullet-active {
-  background: white;
-  border: 1px solid #9ca3af;
+  background: #FFCC00 ;
+  
 }

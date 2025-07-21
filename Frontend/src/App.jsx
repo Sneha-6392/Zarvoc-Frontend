@@ -6,7 +6,7 @@ import ShopProvider from './context/ShopContext.jsx'; // ✅ CONTEXT PROVIDER
 import 'leaflet/dist/leaflet.css';
 
 import LandingPage from './Pages/LandingPage.jsx';
-import Category from './Pages/Category.jsx';
+
 import ContactUs from './Pages/ContactUs.jsx';
 import CartPage from './Pages/CartPage.jsx';
 import TrackOrder from './Pages/TrackOrder.jsx';
@@ -25,6 +25,7 @@ import AuthPage from './Pages/AuthPage.jsx';
 import SellerAuthPage from './Pages/SellerAuthPage.jsx';
 import Ai from './Components/Ai.jsx';
 import HelpCenter from './Pages/HelpCenter.jsx';
+import Signup from './Pages/Signup.jsx';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -40,7 +41,7 @@ function App() {
       <BrowserRouter>
         <ScrollToTop /> 
         <Routes>
-          <Route path="/category" element={<Category />} />
+
           <Route path="/" element={<LandingPage />} /> 
           <Route path="/contact" element={<ContactUs />} />
           <Route path="/cartpage" element={<CartPage />} />
@@ -59,6 +60,7 @@ function App() {
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/sellerlogin" element={<SellerAuthPage />} />
           <Route path="/helpcenter" element={<HelpCenter />} />
+          <Route path="/register" element={<Signup />} />
         </Routes>
         <Ai />
       </BrowserRouter>

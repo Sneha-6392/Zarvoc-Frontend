@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
-import logo from "../assets/Zarvoc2.png";
+import { HashLoader } from "react-spinners"; // Import HashLoader
+// import logo from "../assets/Zarvoc2.png"; // No longer needed for loader
 import "../Styles/Product.css";
 
 const ProductDetails = () => {
@@ -21,11 +22,19 @@ const ProductDetails = () => {
   const requiredFields = ["name", "category", "description", "amount", "price"];
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 2000);
+    // Set a timeout to hide the loader after 3 seconds
+    const timer = setTimeout(() => setLoading(false), 3000); // Changed to 3000ms for 3 seconds
+
     fetch("http://localhost:3000/api/products/")
       .then((res) => res.json())
-      .then((data) => setProducts(data))
+      .then((data) => {
+        setProducts(data);
+        // If data fetching is faster than 3 seconds, the timer will still run.
+        // If data fetching is slower, the loader will disappear once data is fetched.
+        // For a consistent 3-second display, we rely solely on the timer.
+      })
       .catch((err) => console.error("❌ Fetch error:", err));
+    
     return () => clearTimeout(timer);
   }, []);
 
@@ -78,7 +87,8 @@ const ProductDetails = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
-        <img src={logo} alt="Zarvoc Logo" className="w-40 h-40 animate-pulse" />
+        {/* HashLoader component with customizable color and size */}
+        <HashLoader color="#3182CE" size={80} />
       </div>
     );
   }
@@ -87,8 +97,6 @@ const ProductDetails = () => {
     <>
       <Navbar />
       <div className="min-h-screen bg-gray-50 px-4 py-10">
-        
-
         <div className="max-w-4xl mx-auto bg-white shadow-md rounded-xl p-6 mt-6">
           <h2 className="text-2xl font-semibold text-blue-700 mb-4">Product to sell</h2>
 
@@ -105,14 +113,24 @@ const ProductDetails = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Add product category</label>
-                <input
-                  type="text"
+                <label className="block text-sm font-medium text-gray-700">Select product category</label>
+                <select
                   name="category"
                   value={formData.category}
                   onChange={handleInputChange}
                   className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
-                />
+                >
+                  <option value="">-- Select Category --</option>
+                  <option value="fashion">fashion</option>
+                  <option value="electronic">electronic</option>
+                  <option value="furniture">furniture</option>
+                  <option value="kitchen">kitchen</option>
+                  <option value="toys">toys</option>
+                  <option value="cosmetic">cosmetic</option>
+                  <option value="food">food</option>
+                  <option value="sports">sports</option>
+                  <option value="appliances">appliances</option>
+                </select>
               </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700">Add product description</label>

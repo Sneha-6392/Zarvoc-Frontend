@@ -1,197 +1,285 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import {
+  ShoppingCart,
+  Bell,
+  User as UserIcon,
+  Search as SearchIcon,
+  LogOut,
+  UserCircle2,
+  PackageSearch,
+} from "lucide-react"; // lucide-react icons
+import urbanTalesLogo from "../assets/UrbanTales.png"; // your logo path
 
-const Navbar = () => {
+const NAV_ITEMS = [
+  { label: "Home", href: "/" },
+  {
+    label: "Fashion",
+    href: "/category?cat=fashion",
+    links: ["Men", "Women", "Kids", "Accessories", "Luggages"],
+  },
+  {
+    label: "Electronics",
+    href: "/category?cat=electronic",
+    links: ["Laptops", "Tablets", "Cameras", "Headphones", "Smartwatches"],
+  },
+  {
+    label: "Home & Furniture",
+    href: "/category?cat=furniture",
+    links: ["Living Room", "Bedroom", "Kitchen", "Office", "Outdoor"],
+  },
+  { label: "Appliances", href: "/category?cat=kitchen" },
+  {
+    label: "Toys",
+    href: "/category?cat=toys",
+    links: ["Action Figures", "Dolls", "Puzzles", "Board Games"],
+  },
+  { label: "Cosmetics", href: "/category?cat=cosmetic" },
+  { label: "Kilos", href: "/category?cat=food" },
+  { label: "Sports", href: "/category?cat=sports" },
+];
+
+// Helper
+const getCatFromHref = (href = "") => {
+  const m = href.match(/cat=([^&#]+)/i);
+  return m ? decodeURIComponent(m[1]) : undefined;
+};
+
+// Utility
+function cn(...classes) {
+  return classes.filter(Boolean).join(" ");
+}
+
+// ---- ProfileMenu ----
+function ProfileMenu({ user, onLogin, onLogout }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="relative flex items-center gap-2">
+      {/* Show User Name */}
+      {user && user.name && (
+        <span className="text-gray-800 font-medium hidden sm:inline">
+          Hi, {user.name}
+        </span>
+      )}
+
+      {/* Avatar Button */}
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="relative w-10 h-10 flex items-center justify-center rounded-full bg-[#070A52] hover:scale-105 transition overflow-hidden"
+      >
+        {user && user.profileImage ? (
+          <img
+            src={user.profileImage}
+            alt="User avatar"
+            className="w-full h-full object-cover rounded-full"
+          />
+        ) : (
+          <UserIcon className="w-5 h-5 text-white" strokeWidth={2} />
+        )}
+      </button>
+
+      {/* Dropdown */}
+      {open && (
+        <div className="absolute right-0 mt-12 w-48 bg-white rounded-md shadow-lg p-1 text-sm text-gray-700 z-50">
+          {user ? (
+            <>
+              <Link
+                to="/profile"
+                className="flex items-center gap-2 w-full px-3 py-2 hover:bg-gray-100"
+                onClick={() => setOpen(false)}
+              >
+                <UserCircle2 className="w-4 h-4" /> Profile
+              </Link>
+              <Link
+                to="/orders"
+                className="flex items-center gap-2 w-full px-3 py-2 hover:bg-gray-100"
+                onClick={() => setOpen(false)}
+              >
+                <PackageSearch className="w-4 h-4" /> Orders
+              </Link>
+              <button
+                type="button"
+                className="flex items-center gap-2 w-full px-3 py-2 hover:bg-gray-100 text-left"
+                onClick={() => {
+                  setOpen(false);
+                  onLogout?.();
+                }}
+              >
+                <LogOut className="w-4 h-4" /> Logout
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              className="flex items-center gap-2 w-full px-3 py-2 hover:bg-gray-100 text-left"
+              onClick={() => {
+                setOpen(false);
+                onLogin?.();
+              }}
+            >
+              <UserCircle2 className="w-4 h-4" /> Login / Sign Up
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---- DesktopCategory ----
+function DesktopCategory({ item }) {
+  const hasSubs = Array.isArray(item.links) && item.links.length > 0;
+  const baseCat = getCatFromHref(item.href);
+
+  return (
+    <li className="relative group">
+      <NavLink
+        to={item.href || "#"}
+        className={({ isActive }) =>
+          cn(
+            "px-1 py-0.5 transition-colors duration-150 flex items-center gap-1",
+            isActive ? "text-yellow-300" : "text-white hover:text-yellow-300"
+          )
+        }
+      >
+        {item.label}
+        {hasSubs && <span aria-hidden="true">▾</span>}
+      </NavLink>
+      {hasSubs && (
+        <ul className="absolute left-0 mt-2 bg-white text-gray-800 rounded-md shadow-lg z-50 py-2 px-3 min-w-[12rem] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+          {item.links.map((sub, subIdx) => (
+            <li key={subIdx} className="py-1 px-1 rounded">
+              <Link
+                to={`/category?cat=${encodeURIComponent(
+                  baseCat ?? ""
+                )}&sub=${encodeURIComponent(sub)}`}
+                className="block w-full rounded px-2 py-1 hover:bg-[#070A52] hover:text-white"
+              >
+                {sub}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </li>
+  );
+}
+
+// ---- SearchBar ----
+function SearchBar({ onSearch }) {
+  const [query, setQuery] = useState("");
+  const navigate = useNavigate();
+
+  function submit(e) {
+    e.preventDefault();
+    const q = query.trim();
+    if (!q) return;
+    if (onSearch) onSearch(q);
+    else navigate(`/search?q=${encodeURIComponent(q)}`);
+  }
+
+  return (
+    <form onSubmit={submit} className="relative w-full max-w-2xl">
+      <input
+        type="text"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search for products, categories, or ideas..."
+        className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-full shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#070A52] focus:border-[#070A52]"
+      />
+      <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+      <button
+        type="submit"
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-white bg-[#070A52] hover:bg-[#0A0F6D] px-3 py-1 rounded-full"
+      >
+        Go
+      </button>
+    </form>
+  );
+}
+
+// ---- Badge ----
+function Badge({ count }) {
+  if (!count || count <= 0) return null;
+  const display = count > 99 ? "99+" : String(count);
+  return (
+    <span className="absolute -top-1 -right-1 min-w-[1.125rem] h-4 px-1 rounded-full bg-red-600 text-[10px] leading-4 text-white text-center font-bold">
+      {display}
+    </span>
+  );
+}
+
+// ---- Navbar ----
+const Navbar = ({ cartCount, notificationCount, onSearch }) => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     const token = localStorage.getItem("token");
-
-    if (storedUser && token) {
-      setUser(storedUser);
-    }
+    if (storedUser && token) setUser(storedUser);
   }, []);
 
-  const handleProfileClick = () => {
-    if (user) {
-      navigate("/profile");
-    } else {
-      navigate("/login");
-    }
+  const cartQty = cartCount || Number(localStorage.getItem("cartCount") || 0);
+  const notifQty =
+    notificationCount || Number(localStorage.getItem("notificationCount") || 0);
+
+  const handleLogin = () => navigate("/login");
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+    navigate("/");
   };
 
-  const navItems = [
-    {
-      label: "Home",
-      href: "/",
-    },
-    {
-      label: "Fashion",
-      href: "/category?cat=fashionProducts",
-      links: ["Men", "Women", "Kids", "Accessories", "Luggages"],
-    },
-    {
-      label: "Electronics",
-      href: "/category?cat=electronic",
-      links: ["Laptops", "Tablets", "Cameras", "Headphones", "Smartwatches"],
-    },
-    {
-      label: "Home & Furniture",
-      href: "/category?cat=furnitureProducts",
-      links: ["Living Room", "Bedroom", "Kitchen", "Office", "Outdoor"],
-    },
-    {
-      label: "Appliances",
-      href: "/category?cat=kitchenProducts",
-    },
-    {
-      label: "Toys",
-      href: "/category?cat=Toys",
-      links: ["Action Figures", "Dolls", "Puzzles", "Board Games"],
-    },
-    {
-      label: "Cosmetics",
-      href: "/category?cat=cosmeticProducts",
-    },
-    {
-      label: "Kilos",
-      href: "/category?cat=foodProducts",
-    },
-    {
-      label: "Sports",
-      href: "/category?cat=sportsProducts",
-    },
-  ];
-
   return (
-    <nav className="bg-white w-full p-4 rounded-2xl shadow-md font-inter">
-      {/* Top Section */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+    <nav className="sticky top-0 z-50 w-full bg-white shadow-md font-inter px-6">
+      {/* Top Row */}
+      <div className="h-20 flex items-center justify-between gap-6">
         {/* Logo */}
-        <div className="text-3xl font-bold text-blue-700 whitespace-nowrap">
-          𝓩𝓪𝓻𝓿𝓸𝓬
-        </div>
+        <img
+          src={urbanTalesLogo}
+          alt="UrbanTales logo"
+          className="h-16 w-auto object-contain cursor-pointer"
+          onClick={() => navigate("/")}
+        />
 
-        {/* Search Bar */}
-        <div className="w-full md:flex-1 flex justify-center">
-          <div className="relative w-full max-w-2xl">
-            <input
-              type="text"
-              placeholder="Search for products, categories, or ideas..."
-              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-full shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500"
-            />
-            <svg
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-          </div>
+        {/* Search */}
+        <div className="flex-1 flex justify-center">
+          <SearchBar onSearch={onSearch} />
         </div>
 
         {/* Icons */}
-        <div className="flex items-center gap-3 mt-4 md:mt-0">
-          {/* 👤 Profile */}
-          <button
-            onClick={handleProfileClick}
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-600 hover:shadow-lg transition-transform hover:-translate-y-1 overflow-hidden"
-          >
-            {user && user.profileImage ? (
-              <img
-                src={user.profileImage}
-                alt="User"
-                className="w-full h-full object-cover rounded-full"
-              />
-            ) : (
-              <svg
-                className="w-6 h-6 text-white"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 0115 0"
-                />
-              </svg>
-            )}
-          </button>
+        <div className="flex items-center gap-4">
+          <ProfileMenu user={user} onLogin={handleLogin} onLogout={handleLogout} />
 
-          {/* 🛒 Cart */}
-          <Link to="/cartpage">
-            <button className="w-10 h-10 flex items-center justify-center rounded-full text-white bg-gradient-to-r from-green-400 to-teal-500 hover:shadow-lg transition-transform hover:-translate-y-1">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17a2 2 0 100 4 2 2 0 000-4z"
-                />
-              </svg>
-            </button>
+          {/* Cart */}
+          <Link
+            to="/cartpage"
+            className="relative w-10 h-10 flex items-center justify-center rounded-full text-white bg-[#070A52] hover:scale-105 transition"
+          >
+            <ShoppingCart className="w-5 h-5" />
+            <Badge count={cartQty} />
           </Link>
 
-          {/* 🔔 Notifications */}
-          <Link to="/notifications">
-            <button className="w-10 h-10 flex items-center justify-center rounded-full text-white bg-gradient-to-r from-pink-500 to-red-500 hover:shadow-lg transition-transform hover:-translate-y-1">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0a2 2 0 11-4 0m4 0h-4"
-                />
-              </svg>
-            </button>
+          {/* Notifications */}
+          <Link
+            to="/notifications"
+            className="relative w-10 h-10 flex items-center justify-center rounded-full text-white bg-[#070A52] hover:scale-105 transition"
+          >
+            <Bell className="w-5 h-5" />
+            <Badge count={notifQty} />
           </Link>
         </div>
       </div>
 
-      {/* Bottom Nav Links */}
-      <div className="mt-6">
-        <div className="bg-gradient-to-r from-sky-400 to-blue-500 text-white text-center py-2 px-4 rounded-full font-semibold shadow-md hover:from-sky-500 hover:to-blue-600 cursor-pointer transition-colors duration-300">
+      {/* Desktop Category Bar */}
+      <div className="pb-3">
+        <div className="bg-[#070A52] text-white text-center py-2 px-4 rounded-full font-semibold shadow-md">
           <ul className="flex flex-wrap justify-center items-center gap-10">
-            {navItems.map((item, idx) => (
-              <li key={idx} className="relative group inline-block mx-2">
-                <Link
-                  to={item.href || "#"}
-                  className="text-white hover:text-gray-200"
-                >
-                  {item.label} {item.links && "▾"}
-                </Link>
-                {item.links && (
-                  <ul className="absolute hidden group-hover:block bg-white text-gray-800 mt-2 rounded-md shadow-lg z-10 py-2 px-3 text-left min-w-[10rem]">
-                    {item.links.map((sub, subIdx) => (
-                      <li key={subIdx} className="py-1">
-                        <a href="#" className="hover:text-blue-500">
-                          {typeof sub === "string" ? sub : sub.name}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
+            {NAV_ITEMS.map((item) => (
+              <DesktopCategory key={item.label} item={item} />
             ))}
           </ul>
         </div>

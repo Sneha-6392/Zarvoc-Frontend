@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
-import logo from "../assets/Zarvoc2.png";
+import { HashLoader } from "react-spinners"; // Import HashLoader
+// import logo from "../assets/Zarvoc2.png"; // No longer needed for loader
 
 const SellerForm = () => {
   const [formData, setFormData] = useState({
@@ -16,11 +17,12 @@ const SellerForm = () => {
   });
   const [imagePreview, setImagePreview] = useState("");
   const [allFilled, setAllFilled] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Add loading state
   const fileInputRef = useRef();
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 2000);
+    // Set a timeout to hide the loader after 3 seconds
+    const timer = setTimeout(() => setLoading(false), 3000); // Changed to 3000ms for 3 seconds
     return () => clearTimeout(timer);
   }, []);
 
@@ -61,7 +63,8 @@ const SellerForm = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
-        <img src={logo} alt="Zarvoc Logo" className="w-40 h-40 animate-pulse" />
+        {/* HashLoader component with customizable color and size */}
+        <HashLoader color="#3182CE" size={80} />
       </div>
     );
   }
@@ -109,8 +112,7 @@ const SellerForm = () => {
             ))}
 
             <button
- 
- type="submit"
+              type="submit"
               disabled={!allFilled}
               className={`w-full py-2 rounded-lg text-white font-semibold ${
                 allFilled
@@ -125,8 +127,7 @@ const SellerForm = () => {
           {/* Image Upload */}
           <div className="w-full md:w-1/2 flex flex-col items-center">
             <button
- 
- type="button"
+              type="button"
               onClick={() => fileInputRef.current && fileInputRef.current.click()}
               className="mb-4 px-6 py-2 bg-blue-100 text-blue-700 font-medium rounded-lg hover:bg-blue-200"
             >
