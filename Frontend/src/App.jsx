@@ -3,8 +3,9 @@ import './index.css';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 
+
 import LandingPage from './Pages/LandingPage.jsx';
-import CategoryProducts from './Pages/CategoryProducts.jsx';
+
 import ContactUs from './Pages/ContactUs.jsx';
 import CartPage from './Pages/CartPage.jsx';
 import TrackOrder from './Pages/TrackOrder.jsx';
@@ -16,7 +17,10 @@ import SecureCheckout from './Pages/SecureCheckout.jsx';
 import WelcomePage from './Pages/WelcomePage.jsx';
 import Login from './Pages/Login.jsx';
 import AboutUs from './Pages/AboutUs.jsx';
-
+import BrandMarquee from './Pages/BrandMarquee.jsx';
+import EditProfile from './Pages/editprofile.jsx';
+import ProfilePage from './Pages/profilepage.jsx';
+import AuthPage from './Pages/AuthPage.jsx';
 function ScrollToTop() {
   const { pathname } = useLocation();
 
@@ -31,10 +35,10 @@ function App() {
   return (
     <div>
       <BrowserRouter>
-        <ScrollToTop /> {/* ✅ Scroll fix added here */}
+        <ScrollToTop /> 
         <Routes>
-          <Route path="/category" element={<CategoryProducts />} />
-          <Route path="/" element={<LandingPage />} />
+
+          <Route path="/" element={<LandingPage />} /> 
           <Route path="/contact" element={<ContactUs />} />
           <Route path="/cartpage" element={<CartPage />} />
           <Route path="/trackorder" element={<TrackOrder />} />
@@ -46,6 +50,14 @@ function App() {
           <Route path="/checkout" element={<SecureCheckout />} />
           <Route path="/welcomepage" element={<WelcomePage />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/marque" element={<BrandMarquee />} />
+          <Route path="/profile" element={<ProfilePage />} />  
+          <Route path="/editprofile" element={<EditProfile />} /> 
+          <Route path="/auth" element={<AuthPage />} />
+          
+
+          
+
         </Routes>
       </BrowserRouter>
     </div>

@@ -1,7 +1,27 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 const Navbar = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    const token = localStorage.getItem("token");
+
+    if (storedUser && token) {
+      setUser(storedUser);
+    }
+  }, []);
+
+  const handleProfileClick = () => {
+    if (user) {
+      navigate("/profile");
+    } else {
+      navigate("/login");
+    }
+  };
+
   const navItems = [
     { label: "Home", href: "/" },
     {
@@ -65,46 +85,71 @@ const Navbar = () => {
 
         {/* Icons */}
         <div className="flex items-center gap-3 mt-4 md:mt-0">
-          {[
-            {
-              to: "/welcomepage",
-              color: "from-blue-500 to-purple-600",
-              iconPath:
-                "M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 0115 0",
-            },
-            {
-              to: "/cartpage",
-              color: "from-green-400 to-teal-500",
-              iconPath:
-                "M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17a2 2 0 100 4 2 2 0 000-4z",
-            },
-            {
-              to: "/notifications",
-              color: "from-pink-500 to-red-500",
-              iconPath:
-                "M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0a2 2 0 11-4 0m4 0h-4",
-            },
-          ].map((item, idx) => (
-            <Link to={item.to} key={idx}>
-              <button
-                className={`w-10 h-10 flex items-center justify-center rounded-full text-white bg-gradient-to-r ${item.color} hover:shadow-lg transition-transform hover:-translate-y-1`}
+          {/* 👤 Profile */}
+          <button
+            onClick={handleProfileClick}
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-600 hover:shadow-lg transition-transform hover:-translate-y-1 overflow-hidden"
+          >
+            {user && user.profileImage ? (
+              <img
+                src={user.profileImage}
+                alt="User"
+                className="w-full h-full object-cover rounded-full"
+              />
+            ) : (
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
               >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d={item.iconPath}
-                  />
-                </svg>
-              </button>
-            </Link>
-          ))}
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 0115 0"
+                />
+              </svg>
+            )}
+          </button>
+
+          {/* 🛒 Cart */}
+          <Link to="/cartpage">
+            <button className="w-10 h-10 flex items-center justify-center rounded-full text-white bg-gradient-to-r from-green-400 to-teal-500 hover:shadow-lg transition-transform hover:-translate-y-1">
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17a2 2 0 100 4 2 2 0 000-4z"
+                />
+              </svg>
+            </button>
+          </Link>
+
+          {/* 🔔 Notifications */}
+          <Link to="/notifications">
+            <button className="w-10 h-10 flex items-center justify-center rounded-full text-white bg-gradient-to-r from-pink-500 to-red-500 hover:shadow-lg transition-transform hover:-translate-y-1">
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0a2 2 0 11-4 0m4 0h-4"
+                />
+              </svg>
+            </button>
+          </Link>
         </div>
       </div>
 
