@@ -33,7 +33,8 @@ const PromoSlider = () => {
       >
         {slides.map((src, i) => (
           <SwiperSlide key={i} className="flex justify-center items-center">
-            <div className="relative w-full h-[500px] flex justify-center items-center overflow-hidden">
+            {/* Reduced height from 500px to 300px */}
+            <div className="relative w-full h-[300px] flex justify-center items-center overflow-hidden">
               <img
                 src={src}
                 alt={`Slide ${i + 1}`}

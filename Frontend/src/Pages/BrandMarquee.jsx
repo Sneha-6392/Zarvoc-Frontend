@@ -64,9 +64,7 @@ const BrandMarquee = () => {
 
   return (
     <div className="bg-gray-100 px-4 py-10 font-inter">
-      <h2 className="text-2xl font-semibold mb-6 text-emerald-700 text-center">
-        Brand Carausal
-      </h2>
+      
 
       <div className="brand-marquee-container">
         {showToast && <div className="custom-toast">{toastText}</div>}

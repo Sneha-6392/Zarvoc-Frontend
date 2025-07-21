@@ -54,43 +54,15 @@ const products = [
 ];
 
 const TrendingProducts = () => {
-  const scrollRef = React.useRef(null);
-
-  const scrollContainer = (direction) => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({
-        left: direction === "left" ? -300 : 300,
-        behavior: "smooth",
-      });
-    }
-  };
-
   return (
     <div className="bg-gray-100 p-6">
-      <div className="relative group bg-white p-4 rounded-lg shadow-md">
+      <div className="bg-white p-4 rounded-lg shadow-md">
         <h1 className="text-lg font-semibold text-gray-800 mb-4">
           Trending on social media
         </h1>
 
-        {/* Scroll Buttons */}
-        <button
-          onClick={() => scrollContainer("left")}
-          className="absolute left-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/60 hover:bg-white px-3 py-2 rounded shadow z-10"
-        >
-          ◀
-        </button>
-        <button
-          onClick={() => scrollContainer("right")}
-          className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/60 hover:bg-white px-3 py-2 rounded shadow z-10"
-        >
-          ▶
-        </button>
-
         {/* Scrollable Product Cards */}
-        <div
-          ref={scrollRef}
-          className="flex gap-4 overflow-x-auto scroll-smooth no-scrollbar"
-        >
+        <div className="flex gap-4 overflow-x-auto scroll-smooth no-scrollbar">
           {products.map((product, index) => (
             <div
               key={index}
@@ -111,5 +83,3 @@ const TrendingProducts = () => {
 };
 
 export default TrendingProducts;
-
-

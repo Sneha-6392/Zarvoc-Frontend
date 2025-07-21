@@ -5,6 +5,7 @@ import CategoryCircles from "../Components/CategoryCircles";
 import BestSellers from "../Components/BestSeller";
 import ProductGrid from "../Components/ProductGrid";
 import PromoGrid from "../Components/PromoGrid";
+import HappyCustomers from "../Components/HappyCustomers";
 import TrendingProducts from "../Components/TrendingProducts";
 import CustomerReviews from "../Components/CustomerReviews";
 import Footer from "../Components/Footer";
@@ -40,7 +41,7 @@ function LandingPage() {
       <ProductGrid />
       <BrandMarquee />
       <PromoGrid />
-
+      <HappyCustomers />
       <TrendingProducts />
       <CustomerReviews />
 
