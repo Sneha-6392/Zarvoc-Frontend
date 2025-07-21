@@ -4,72 +4,74 @@ const categories = [
   {
     id: 1,
     name: "Fashion",
-    image: "https://assets.ajio.com/medias/sys_master/root/20240903/W3VZ/66d717cd6f60443f314e10fb/-473Wx593H-442429443-indigo-MODEL.jpg",
+    image: "https://i.pinimg.com/1200x/16/ea/40/16ea40729954d9f7955c0aa18b5311a7.jpg",
     category: "fashion",
   },
   {
     id: 2,
-    name: "Gadgets",
-    image: "https://www.dxomark.com/wp-content/uploads/medias/post-157488/Google-Pixel-8-Pro-featured-image-packshot-review.jpg",
+    name: "Electronics",
+    image: "https://i.pinimg.com/736x/a3/4a/d1/a34ad1d68f5c3f01d7fb21119c556ffe.jpg",
     category: "electronic",
   },
   {
     id: 3,
     name: "Furniture",
-    image: "https://www.ulcdn.net/images/products/921494/product/Sidney_Study_Table_Rustik_Oak_LP.jpg?1722319558",
+    image: "https://i.pinimg.com/736x/6b/27/24/6b2724cd4ec8013e4b537cd1c5a8893d.jpg",
     category: "furniture",
   },
   {
     id: 4,
     name: "Appliances",
-    image: "https://media-ik.croma.com/prod/https://media.croma.com/image/upload/v1724939978/Croma%20Assets/Small%20Appliances/Microwave%20or%20OTG/Images/229341_0_pokxm4.png",
+    image: "https://i.pinimg.com/1200x/e1/b6/98/e1b698b84d069ca72d7bc57c5152ed82.jpg",
     category: "kitchen",
   },
   {
     id: 5,
     name: "Toys",
-    image: "https://mmtoyworld.com/cdn/shop/files/PeppaPigFamilyHouseToySet-5Pcs_EducationalPlayfor3_Kids_PinkIncludes1Umbrella_3Chairs_1Table.jpg?v=1708711004",
+    image: "https://i.pinimg.com/736x/a7/ef/07/a7ef075291c451a438d5b737474b1957.jpg",
     category: "toys",
   },
   {
     id: 6,
     name: "Cosmetics",
-    image: "https://www.netmeds.com/images/product-v1/400x400/891953/lakme_eyeconic_kajal_twin_pack_24h_deep_black_2_x_0_35_gm_2s_84675_1_1.webp",
+    image: "https://i.pinimg.com/1200x/0a/b0/cc/0ab0cc09d08e1816b89f273e18a4dd74.jpg",
     category: "cosmetic",
   },
   {
     id: 7,
     name: "Kilos",
-    image: "https://m.media-amazon.com/images/I/810bFfXtiZS._UF350,350_QL80_.jpg",
+    image: "https://i.pinimg.com/1200x/56/2d/ed/562ded9c5674b296bf21256d5663e9ec.jpg",
     category: "food",
   },
   {
     id: 8,
     name: "Sports",
-    image: "https://5.imimg.com/data5/SELLER/Default/2023/3/296852212/BA/MJ/ST/40983079/ss-gunther-player-edition-cricket-bat-500x500.jpg",
+    image: "https://i.pinimg.com/1200x/91/37/75/9137759fe8d4bd3692e1538f4edd400a.jpg",
     category: "sports",
   },
 ];
 
 function CategoryCircles() {
   return (
-    <section className="bg-gray-100 px-4 py-6 overflow-x-auto whitespace-nowrap">
-      <div className="flex justify-center items-center gap-25 min-w-max">
-
+    <section className="bg-gray-50 px-4 py-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-8 gap-6 place-items-center">
         {categories.map((cat) => (
           <Link
             to={`/category?cat=${cat.category}`}
             key={cat.id}
-            className="flex flex-col items-center flex-shrink-0 hover:scale-105 transition-transform duration-300"
+            className="group flex flex-col items-center hover:scale-105 transition-transform duration-300"
           >
-            <div className="w-20 h-20 rounded-full overflow-hidden border border-gray-300 shadow-sm">
+            {/* Circle Image */}
+            <div className="w-24 h-24 rounded-full overflow-hidden  ">
               <img
                 src={cat.image}
-                className="w-full h-full object-cover"
                 alt={cat.name}
+                className="w-full h-full object-cover group-hover:brightness-110"
               />
             </div>
-            <span className="text-sm mt-2 text-center text-gray-700 font-medium">
+
+            {/* Category Name */}
+            <span className="text-sm mt-3 text-center font-semibold text-gray-700 group-hover:text-[#070A52] transition-colors">
               {cat.name}
             </span>
           </Link>

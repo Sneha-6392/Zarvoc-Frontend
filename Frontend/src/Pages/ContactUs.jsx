@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 import { Link } from "react-router-dom";
-import logo from "../assets/Zarvoc2.png";
 import { HashLoader } from "react-spinners"; // Import HashLoader
 
 // Leaflet imports for map functionality
@@ -191,9 +190,9 @@ export default function ContactUs() {
           <div>
             <h2 className="text-3xl font-semibold mb-4">Contact Us</h2>
             <p className="mb-2">
-              Email, call, or complete the form to learn how Zarvoc can solve your messaging problem.
+              Email, call, or complete the form to learn how UrbanTales can solve your messaging problem.
             </p>
-            <p className="text-sm text-gray-600">info@zarvoc.com</p>
+            <p className="text-sm text-gray-600">info@urbantales.com</p>
             <p className="text-sm text-gray-600 mb-2">921-231-221</p>
             <a href="/support" className="text-blue-600 underline text-sm">Customer Support</a>
 
@@ -207,13 +206,13 @@ export default function ContactUs() {
               <div>
                 <h4 className="font-semibold">Feedback and Suggestions</h4>
                 <p className="text-sm text-gray-600">
-                  We appreciate feedback and ideas. Your input helps us shape the future of Zarvoc.
+                  We appreciate feedback and ideas. Your input helps us shape the future of UrbanTales.
                 </p>
               </div>
               <div>
                 <h4 className="font-semibold">Media Inquiries</h4>
                 <p className="text-sm text-gray-600">
-                  For media-related questions or partnerships, reach out to media@zarvoc.com
+                  For media-related questions or partnerships, reach out to media@urbantales.com
                 </p>
               </div>
             </div>
@@ -269,7 +268,7 @@ export default function ContactUs() {
               ></textarea>
               <button
                 type="submit"
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg w-full hover:bg-blue-700"
+                className="bg-[#070A52] text-white px-4 py-2 rounded-lg w-full hover:bg-[#FFCC00]"
               >
                 Submit
               </button>
@@ -292,7 +291,7 @@ export default function ContactUs() {
               {userLocation.error && !userLocation.latitude ? (
                 <div className="flex items-center justify-center h-full bg-gray-200 text-gray-700 text-center p-4 rounded-xl">
                   <p>{userLocation.error}</p>
-                  <p>The map is centered on Zarvoc Headquarters in Bengaluru.</p>
+                  <p>The map is centered on UrbanTales Headquarters in Bengaluru.</p>
                 </div>
               ) : (
                 <MapContainer
@@ -311,7 +310,7 @@ export default function ContactUs() {
                   )}
                   {!userLocation.latitude && !userLocation.longitude && (
                       <Marker position={defaultMapCenter}>
-                          <Popup>Zarvoc Headquarters (Bengaluru)</Popup>
+                          <Popup>UrbanTales Headquarters (Bengaluru)</Popup>
                       </Marker>
                   )}
                 </MapContainer>
@@ -327,7 +326,7 @@ export default function ContactUs() {
                   </p>
               )}
               <p className="mt-2 text-sm">
-                Zarvoc Inc. <br />
+                UrbanTales Inc. <br />
                 Buildings Alyssa, Begonia & Clove Embassy Tech Village, <br />
                 Outer Ring Road, Devarabeesanahalli Village, <br />
                 Bengaluru, 560103, <br />
@@ -355,7 +354,7 @@ export default function ContactUs() {
                 />
                 <button
                   type="submit"
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                  className="bg-[#070A52] text-white px-4 py-2 rounded-lg hover:bg-[#FFCC00]"
                 >
                   Submit
                 </button>
@@ -366,25 +365,26 @@ export default function ContactUs() {
             </div>
 
             <div className="space-y-4">
-              {[{
-                q: "What makes Zarvoc different from other e-commerce platforms?",
-                a: "Zarvoc stands out with its user-friendly interface, lightning-fast performance, and a carefully curated collection of quality products."
-              }, {
-                q: "How secure is shopping on Zarvoc?",
-                a: "We use industry-standard encryption and secure payment gateways to protect your personal and payment details."
-              }, {
-                q: "Can I personalize my Zarvoc experience?",
-                a: "Yes! Customize notifications, manage preferences, and track orders in your account."
-              }, {
-                q: "What features does Zarvoc offer for groups or communities?",
-                a: "Group buying, shared wishlists, referral rewards, and curated product collections are all available."
-              }].map((item, index) => (
-                <details key={`${item.q}-${index}`} className="bg-white rounded-lg p-4 shadow">
-                  <summary className="cursor-pointer font-medium">{item.q}</summary>
-                  <p className="mt-2 text-sm text-gray-600">{item.a}</p>
-                </details>
-              ))}
-            </div>
+  {[{
+    q: "What makes UrbanTales different from other e-commerce platforms?",
+    a: "UrbanTales stands out with its user-friendly interface, lightning-fast performance, and a carefully curated collection of quality products."
+  }, {
+    q: "How secure is shopping on UrbanTales?",
+    a: "We use industry-standard encryption and secure payment gateways to protect your personal and payment details."
+  }, {
+    q: "Can I personalize my UrbanTales experience?",
+    a: "Yes! Customize notifications, manage preferences, and track orders in your account."
+  }, {
+    q: "What features does UrbanTales offer for groups or communities?",
+    a: "Group buying, shared wishlists, referral rewards, and curated product collections are all available."
+  }].map((item, index) => (
+    <details key={`${item.q}-${index}`} className="bg-white rounded-lg p-4 shadow">
+      <summary className="cursor-pointer font-medium">{item.q}</summary>
+      <p className="mt-2 text-sm text-gray-600">{item.a}</p>
+    </details>
+  ))}
+</div>
+
           </div>
         </div>
 
@@ -395,7 +395,7 @@ export default function ContactUs() {
           </h2>
           <div className="space-x-4">
             <Link to="/">
-              <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+              <button className="bg-[#070A52] text-white px-6 py-2 rounded-lg hover:bg-[#FFCC00]">
                 Get Started
               </button>
             </Link>
