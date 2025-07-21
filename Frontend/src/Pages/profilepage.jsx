@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../Components/Navbar";
-import { HashLoader } from "react-spinners"; // Import HashLoader
-
+import { HashLoader } from "react-spinners";
+import Footer from "../Components/Footer";
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [loading, setLoading] = useState(true);
 
   const user = JSON.parse(localStorage.getItem("user")) || {
     fullName: "John Doe",
@@ -16,16 +16,15 @@ export default function ProfilePage() {
     gender: "N/A",
     role: "User",
     bio: "No bio added.",
-    profileImage: "", // default empty to trigger avatar logic
+    profileImage: "",
   };
 
   useEffect(() => {
-    // Simulate a loading period for 3 seconds
     const timer = setTimeout(() => {
-      setLoading(false); // Set loading to false after the simulated delay
-    }, 3000); // 3 seconds delay
+      setLoading(false);
+    }, 2000);
 
-    return () => clearTimeout(timer); // Clean up the timer on component unmount
+    return () => clearTimeout(timer);
   }, []);
 
   const getInitials = (name) => {
@@ -42,8 +41,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
-        {/* HashLoader component with customizable color and size */}
-        <HashLoader color="#3182CE" size={80} />
+        <HashLoader color="#070A52" size={80} />
       </div>
     );
   }
@@ -51,19 +49,19 @@ export default function ProfilePage() {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gradient-to-br from-blue-100 to-white py-10 px-4 flex justify-center items-center">
-        <div className="bg-white shadow-2xl rounded-3xl w-full max-w-4xl overflow-hidden transition-all duration-300">
+      <div className="min-h-0.5 bg-white py-10 px-4 flex justify-center items-center">
+        <div className="bg-gray-50 shadow-xl rounded-3xl w-full max-w-5xl overflow-hidden">
           <div className="flex flex-col md:flex-row p-6 md:p-10 gap-8">
-            {/* Profile Image / Initials Avatar */}
+            {/* Left: Avatar & Actions */}
             <div className="flex flex-col items-center md:w-1/3">
               {user.profileImage ? (
                 <img
                   src={user.profileImage}
                   alt="Profile"
-                  className="w-40 h-40 rounded-full shadow-lg object-cover border-4 border-blue-400"
+                  className="w-40 h-40 rounded-full object-cover shadow-md border-4 border-blue-500"
                 />
               ) : (
-                <div className="w-40 h-40 rounded-full bg-blue-500 text-white flex items-center justify-center text-5xl font-bold shadow-lg">
+                <div className="w-40 h-40 rounded-full bg-blue-600 text-white flex items-center justify-center text-5xl font-bold shadow-md">
                   {getInitials(user.fullName)}
                 </div>
               )}
@@ -73,24 +71,22 @@ export default function ProfilePage() {
 
               <button
                 onClick={() => navigate("/editprofile")}
-                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+                className="mt-4 px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
               >
                 Edit Profile
               </button>
 
               <button
                 onClick={handleLogout}
-                className="mt-2 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition"
+                className="mt-2 px-5 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition"
               >
                 Logout
               </button>
             </div>
 
-            {/* Profile Details */}
+            {/* Right: Profile Details */}
             <div className="flex-1">
-              <h3 className="text-xl font-semibold mb-4 text-blue-800 border-b pb-2">
-                Personal Information
-              </h3>
+              <h3 className="text-xl font-bold text-blue-800 border-b pb-2 mb-4">Personal Information</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Info label="Email" value={user.email} />
                 <Info label="Phone" value={user.phone} />
@@ -102,7 +98,7 @@ export default function ProfilePage() {
 
               <div className="mt-6">
                 <h4 className="text-md font-medium text-gray-700 mb-2">Bio</h4>
-                <p className="text-gray-600 text-sm leading-relaxed bg-gray-100 p-3 rounded-md shadow-sm min-h-[60px]">
+                <p className="text-sm text-gray-700 bg-white p-3 rounded-md border shadow-sm min-h-[60px]">
                   {user.bio || "No bio available."}
                 </p>
               </div>
@@ -110,14 +106,15 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+      <Footer />
     </>
   );
 }
 
-// Reusable info component
+// Reusable Info Box
 function Info({ label, value }) {
   return (
-    <div className="bg-gray-50 p-3 rounded-md shadow-sm">
+    <div className="bg-white p-3 rounded-md border shadow-sm">
       <p className="text-xs text-gray-500">{label}</p>
       <p className="text-sm font-medium text-gray-800 break-words">{value || "N/A"}</p>
     </div>
