@@ -18,42 +18,33 @@ const Category = () => {
   const [searchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true); // Add loading state
-  const categoryKey = searchParams.get('cat');
-  const category = categoryMap[categoryKey];
+  const [loading, setLoading] = useState(true); // <-- FIXED: Add loading state
+  const category = searchParams.get('cat');
 
   useEffect(() => {
-    // Set a timeout to hide the loader after 2 seconds
-    const timer = setTimeout(() => setLoading(false), 2000);
-    return () => clearTimeout(timer); // Clear timeout on component unmount
-  }, []);
+    setLoading(true); // Start loading when category changes
 
-  useEffect(() => {
-    if (!loading) { // Only fetch data after loading is false
-      if (!category) {
-        setError('Invalid category');
-        return;
-      }
-
-      fetch(`http://localhost:5000/api/products/${category}`)
+    const timer = setTimeout(() => {
+      fetch(`http://localhost:3000/api/products/${category}`)
         .then((res) => res.json())
         .then((data) => {
           setProducts(data);
           setError(null);
+          setLoading(false); // Stop loading after data is set
         })
         .catch((err) => {
           console.error(err);
           setError('Failed to fetch products');
+          setLoading(false); // Stop loading on error too
         });
-    }
-  }, [category, loading]); // Dependency on category and loading state
+    }, 500); // Optional slight delay for visual effect
+
+    return () => clearTimeout(timer);
+  }, [category]); // <-- FIXED: wrap everything inside useEffect
 
   const addToCart = async (id, name, price, image) => {
     const userId = localStorage.getItem('userId');
     if (!userId) {
-      // Using a custom modal/message box instead of alert()
-      // For simplicity, a console log is used here, but in a real app,
-      // you would render a modal component.
       console.log('You must be logged in to add items to cart.');
       return;
     }
@@ -61,7 +52,7 @@ const Category = () => {
     const item = { id, name, price, image, qty: 1 };
 
     try {
-      const res = await fetch('http://localhost:5000/api/cart/add', {
+      const res = await fetch('http://localhost:3000/api/cart/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, item })
@@ -69,21 +60,19 @@ const Category = () => {
 
       const data = await res.json();
       if (res.ok) {
-        console.log(data.msg || 'Added to cart!'); // Use console.log instead of alert
+        console.log(data.msg || 'Added to cart!');
       } else {
-        console.log(data.msg || 'Failed to add to cart.'); // Use console.log instead of alert
+        console.log(data.msg || 'Failed to add to cart.');
       }
     } catch (err) {
       console.error('Error:', err);
-      console.log('Server error'); // Use console.log instead of alert
+      console.log('Server error');
     }
   };
 
-  // Show loader while loading is true
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
-        {/* HashLoader component with customizable color and size */}
         <HashLoader color="#3182CE" size={80} />
       </div>
     );
@@ -96,7 +85,6 @@ const Category = () => {
   return (
     <>
       <Navbar />
-
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 p-6">
         {products.map((product) => (
           <div
@@ -115,12 +103,7 @@ const Category = () => {
               <button
                 className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700 text-sm"
                 onClick={() =>
-                  addToCart(
-                    product._id,
-                    product.name,
-                    product.price,
-                    product.image
-                  )
+                  addToCart(product._id, product.name, product.price, product.image)
                 }
               >
                 Add to Cart

@@ -22,7 +22,7 @@ const ProductDetails = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 2000);
-    fetch("http://localhost:5000/products")
+    fetch("http://localhost:3000/api/products/")
       .then((res) => res.json())
       .then((data) => setProducts(data))
       .catch((err) => console.error("❌ Fetch error:", err));
@@ -41,7 +41,7 @@ const ProductDetails = () => {
     e.preventDefault();
     if (isAddBtnDisabled) return;
 
-    fetch("http://localhost:5000/products", {
+    fetch("http://localhost:3000/api/products", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData)

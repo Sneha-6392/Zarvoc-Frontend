@@ -5,7 +5,7 @@ const categories = [
     id: 1,
     name: "Fashion",
     image: "https://assets.ajio.com/medias/sys_master/root/20240903/W3VZ/66d717cd6f60443f314e10fb/-473Wx593H-442429443-indigo-MODEL.jpg",
-    category: "fashionProducts",
+    category: "fashion",
   },
   {
     id: 2,
@@ -17,37 +17,37 @@ const categories = [
     id: 3,
     name: "Furniture",
     image: "https://www.ulcdn.net/images/products/921494/product/Sidney_Study_Table_Rustik_Oak_LP.jpg?1722319558",
-    category: "furnitureProducts",
+    category: "furniture",
   },
   {
     id: 4,
     name: "Appliances",
     image: "https://media-ik.croma.com/prod/https://media.croma.com/image/upload/v1724939978/Croma%20Assets/Small%20Appliances/Microwave%20or%20OTG/Images/229341_0_pokxm4.png",
-    category: "kitchenProducts",
+    category: "kitchen",
   },
   {
     id: 5,
     name: "Toys",
     image: "https://mmtoyworld.com/cdn/shop/files/PeppaPigFamilyHouseToySet-5Pcs_EducationalPlayfor3_Kids_PinkIncludes1Umbrella_3Chairs_1Table.jpg?v=1708711004",
-    category: "childrenToysProducts",
+    category: "toys",
   },
   {
     id: 6,
     name: "Cosmetics",
     image: "https://www.netmeds.com/images/product-v1/400x400/891953/lakme_eyeconic_kajal_twin_pack_24h_deep_black_2_x_0_35_gm_2s_84675_1_1.webp",
-    category: "cosmeticProducts",
+    category: "cosmetic",
   },
   {
     id: 7,
     name: "Kilos",
     image: "https://m.media-amazon.com/images/I/810bFfXtiZS._UF350,350_QL80_.jpg",
-    category: "foodProducts",
+    category: "food",
   },
   {
     id: 8,
     name: "Sports",
     image: "https://5.imimg.com/data5/SELLER/Default/2023/3/296852212/BA/MJ/ST/40983079/ss-gunther-player-edition-cricket-bat-500x500.jpg",
-    category: "sportsProducts",
+    category: "sports",
   },
 ];
 
