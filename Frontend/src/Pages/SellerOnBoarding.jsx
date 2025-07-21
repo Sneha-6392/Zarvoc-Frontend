@@ -15,7 +15,7 @@ const SellerOnBoarding = () => {
   }, []);
 
   const handleClick = () => {
-    navigate("/sellerform");
+    navigate("/sellerlogin");
   };
 
   if (loading) {

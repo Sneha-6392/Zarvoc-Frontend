@@ -156,9 +156,10 @@ const Footer = () => {
           <div className="flex items-center gap-2">
             <span className="text-yellow-400 text-lg">&#127873;</span> Gift Cards
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-yellow-400 text-lg">&#10067;</span> Help Center
-          </div>
+          <Link to="/helpcenter" className="flex items-center gap-2 cursor-pointer hover:underline">
+            <span className="text-yellow-400 text-lg">&#128188;</span> Help Center
+          </Link>
+
         </div>
         <div className="text-[#878787]">© 2025 - 2027 SuperMarket.com</div>
         <div className="flex gap-1">
