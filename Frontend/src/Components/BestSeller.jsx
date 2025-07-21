@@ -1,71 +1,169 @@
-import React from 'react';
-import styles from '../Styles/BestSeller.module.css';
+import React from "react";
+import { Heart, ShoppingBag } from "lucide-react";
 
+// Demo data — replace with your API data
 const bestSellers = [
   {
-    name: 'Apple',
-    description: 'Fresh, juicy and clean apples, great for health.',
-    price: '80 / Kg',
-    image: 'https://i.pinimg.com/736x/87/83/d1/8783d12fc288892db42628034db147ae.jpg'
+    brand: "RANGMANCH",
+    name: "Teal Textured Below Knee Length Kurti",
+    price: 779,
+    oldPrice: 1299,
+    discount: 40,
+    image:
+      "https://i.pinimg.com/1200x/b2/41/cb/b241cbe49815badd62fb0ce85a0e8ecb.jpg",
   },
   {
-    name: 'Milk',
-    description: 'Full cream fresh milk for everyday needs.',
-    price: '60 / ltr',
-    image: 'https://i.pinimg.com/736x/36/3a/df/363adfbd007456f62197489f96a8b8f9.jpg'
+    brand: "RANGMANCH",
+    name: "Medium Blue Embroidered Cotton Top",
+    price: 844,
+    oldPrice: 1299,
+    discount: 35,
+    image:
+      "https://i.pinimg.com/736x/c2/f8/d2/c2f8d2086a829789f2ef09b13f253710.jpg",
   },
   {
-    name: 'Clothes',
-    description: 'High Quality Fabric, Comfortable And Stylish.',
-    price: '599 / 20000',
-    image: 'https://i.pinimg.com/736x/d3/e5/ff/d3e5ff3d9c73c7ebd9956f56a5dcbdf4.jpg'
+    brand: "ANNABELLE",
+    name: "Brown Solid Women Flare Pants",
+    price: 909,
+    oldPrice: 1299,
+    discount: 30,
+    image:
+      "https://i.pinimg.com/736x/27/ee/9b/27ee9be6ec2800f22d7bf64e5124f0cf.jpg",
   },
   {
-    name: 'Branded shoes',
-    description: 'Branded shoes, the perfect balance of fashion and functionality.',
-    price: '4500 / 1.5 lac',
-    image: 'https://images.unsplash.com/photo-1556906781-9a412961c28c?q=80&w=687&auto=format&fit=crop'
+    brand: "Gizelle",
+    name: "Gizelle Two Piece Set - Linen Look Short Sleeve Shirt & Shorts Set",
+    price: 1329,
+    oldPrice: 1899,
+    discount: 30,
+    image:
+      "https://i.pinimg.com/1200x/fc/9e/7f/fc9e7fcfc2caa56dd8b1768f914efb0a.jpg",
   },
   {
-    name: 'Laptop',
-    description: 'Laptops - High Performance Laptops',
-    price: '55,000',
-    image: 'https://i.pinimg.com/736x/fe/f7/b3/fef7b3cbaeb59afc974ab04dd20741e6.jpg'
+    brand: "Aveloria",
+    name: "Aveloria Floral Print Button Front Shirt",
+    price: 909,
+    oldPrice: 1299,
+    discount: 30,
+    image:
+      "https://i.pinimg.com/736x/95/07/06/950706f8458ece429798b9ce6819233f.jpg",
   },
-  {
-    name: 'Smartphone',
-    description: 'Latest smartphone, great camera quality.',
-    price: '25,000 / 2,000,00',
-    image: 'https://i.pinimg.com/736x/ce/e9/a3/cee9a3b405bb308569bc26c76d8cfd63.jpg'
-  }
 ];
+
+// Helper to format rupees with commas
+const formatINR = (n) =>
+  typeof n === "number"
+    ? n.toLocaleString("en-IN", { maximumFractionDigits: 0 })
+    : n;
 
 const BestSellers = () => {
   return (
-    <section className="px-4 py-6">
-      <h2 className="text-2xl font-semibold mb-4 text-emerald-700">Best Sellers</h2>
-      <div className="flex gap-6 overflow-x-auto no-scrollbar">
-        {bestSellers.map((product, idx) => (
-          <article
-            key={idx}
-            className={`${styles.productCard} min-w-[270px] max-w-xs flex-shrink-0`}
-            tabIndex="0"
-          >
-            <img
-              src={product.image}
-              alt={product.name}
-              className={styles.productImage}
-              loading="lazy"
-            />
-            <div className={styles.productInfo}>
-              <h3 className={styles.productName}>{product.name}</h3>
-              <p className={styles.productDesc}>{product.description}</p>
-              <div className={styles.productPrice}>₹{product.price}</div>
-            </div>
-          </article>
+    <section className="px-4 py-12 bg-[#F9FAFB]">
+      {/* Heading */}
+      <div className="text-center mb-10">
+        <h2 className="text-3xl md:text-4xl font-semibold  text-[#070A52]">
+          Best Sellers
+        </h2>
+      </div>
+
+      {/* Desktop Grid */}
+      <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-8 max-w-7xl mx-auto">
+        {bestSellers.map((item, i) => (
+          <BestSellerCard key={i} item={item} />
         ))}
       </div>
+
+      {/* Mobile / Small Screen Swipe Row (no arrows) */}
+      <div className="md:hidden -mx-4 px-4">
+        <div className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-4 scrollbar-thin scrollbar-thumb-gray-300">
+          {bestSellers.map((item, i) => (
+            <div key={i} className="snap-start shrink-0 w-[220px]">
+              <BestSellerCard item={item} compact />
+            </div>
+          ))}
+        </div>
+      </div>
     </section>
+  );
+};
+
+/* ----------------- Card Component ----------------- */
+const BestSellerCard = ({ item, compact = false }) => {
+  const {
+    brand,
+    name,
+    price,
+    oldPrice,
+    discount,
+    image,
+  } = item;
+
+  const pct = typeof discount === "number" ? `${discount}% OFF` : discount;
+
+  return (
+    <article
+      className="relative bg-white rounded-2xl shadow hover:shadow-xl transition-shadow duration-300 p-4 text-left border border-gray-100"
+    >
+      {/* Image block */}
+      <div className="relative w-full overflow-hidden rounded-xl mb-4 aspect-[3/4] bg-gray-100">
+        <img
+          src={image}
+          alt={name}
+          className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+          loading="lazy"
+        />
+
+        {/* Floating action icons */}
+        <div className="absolute top-3 right-3 flex flex-col gap-2">
+          <button
+            type="button"
+            className="w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center hover:scale-110 transition"
+            aria-label="Add to bag"
+            onClick={() => console.log("Add to bag:", name)}
+          >
+            <ShoppingBag className="w-4 h-4 text-[#070A52]" />
+          </button>
+          <button
+            type="button"
+            className="w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center hover:scale-110 transition"
+            aria-label="Add to wishlist"
+            onClick={() => console.log("Wishlist:", name)}
+          >
+            <Heart className="w-4 h-4 text-[#070A52]" />
+          </button>
+        </div>
+      </div>
+
+      {/* Text */}
+      <h3 className="text-sm font-bold tracking-wide text-gray-800 uppercase">
+        {brand}
+      </h3>
+      <p
+        className={compact
+          ? "text-xs text-gray-500 mt-1 line-clamp-2"
+          : "text-sm text-gray-600 mt-1 line-clamp-2"}
+        title={name}
+      >
+        {name}
+      </p>
+
+      {/* Pricing */}
+      <div
+        className={compact
+          ? "mt-2 text-sm font-semibold text-gray-900"
+          : "mt-2 text-base font-semibold text-gray-900"}
+      >
+        ₹ {formatINR(price)}{" "}
+        {oldPrice && (
+          <span className="text-gray-400 line-through ml-1 text-xs font-normal">
+            ₹ {formatINR(oldPrice)}
+          </span>
+        )}{" "}
+        {pct && (
+          <span className="ml-1 text-xs font-bold text-[#FFCC00]">{pct}</span>
+        )}
+      </div>
+    </article>
   );
 };
 
