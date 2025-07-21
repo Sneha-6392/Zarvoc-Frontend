@@ -1,68 +1,57 @@
+// src/pages/Login.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import { signInWithPopup } from 'firebase/auth';
 
-// Assuming you have these components in '../Components/'
+import { auth, provider } from '../../utils/firebase'; // Adjust path if needed
 import Navbar from '../Components/Navbar';
 import Footer from '../Components/Footer';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate for redirection
 
-// IMPORTANT: Replace "YOUR_GOOGLE_CLIENT_ID_HERE" with your actual Google Client ID.
-// Obtain this from the Google Cloud Console (APIs & Services -> Credentials).
-// Ensure your 'Authorized JavaScript origins' in Google Cloud include your app's URL (e.g., http://localhost:3000).
-const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID_HERE";
+const BASE_API_URL = import.meta.env.VITE_BACKEND_API_URL || 'http://localhost:3000';
 
-const Login = () => { // Renamed from AuthPage to Login as per your file name
-    // State for managing local form data (fullName, email, phone, password)
+const Login = () => {
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
         phone: '',
-        password: ''
+        password: '',
+        confirmPassword: ''
     });
-    // State to determine if current view is Signup or Signin
     const [isSignup, setIsSignup] = useState(false);
-    // State for displaying backend errors
     const [error, setError] = useState('');
-
-    // State to trigger banner content animation
     const [bannerAnimate, setBannerAnimate] = useState(false);
+    const navigate = useNavigate(); // Initialize navigate hook
 
-    // Effect to determine the initial active form/mode based on URL query parameter
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
-        const mode = urlParams.get('mode'); // Check for '?mode=signup' in URL
+        const mode = urlParams.get('mode');
 
         if (mode === 'signup') {
             setIsSignup(true);
         } else {
             setIsSignup(false);
         }
-        setBannerAnimate(true); // Show initial banner content
+        setBannerAnimate(true);
     }, []);
 
-    // Function to toggle between Sign In and Sign Up modes
     const toggleMode = () => {
-        // Start banner content animation out
         setBannerAnimate(false);
-        setError(''); // Clear previous errors
-        setFormData({ fullName: '', email: '', phone: '', password: '' }); // Clear form fields
+        setError('');
+        setFormData({ fullName: '', email: '', phone: '', password: '', confirmPassword: '' });
 
-        // Delay the form switch and "in" animation to allow "out" animation to play
         setTimeout(() => {
             const newIsSignup = !isSignup;
             setIsSignup(newIsSignup);
 
-            // Update URL to reflect the current mode
             const newUrl = new URL(window.location.href);
             newUrl.searchParams.set('mode', newIsSignup ? 'signup' : 'signin');
             window.history.pushState({ path: newUrl.href }, '', newUrl.href);
 
-            // Trigger "in" animation for new content
             setBannerAnimate(true);
-        }, 300); // This delay should match your banner-content CSS transition duration
+        }, 300);
     };
 
-    // Handler for local form input changes
     const handleChange = (e) => {
         setFormData(prev => ({
             ...prev,
@@ -70,79 +59,71 @@ const Login = () => { // Renamed from AuthPage to Login as per your file name
         }));
     };
 
-    // Handler for local form submission (Email/Password Sign In/Sign Up)
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError(''); // Clear previous errors
+        setError('');
+
+        if (isSignup && formData.password !== formData.confirmPassword) {
+            setError('Passwords do not match.');
+            return;
+        }
 
         const url = isSignup
-            ? 'http://localhost:3000/api/users/signup'
-            : 'http://localhost:3000/api/users/login';
+            ? `${BASE_API_URL}/api/users/signup`
+            : `${BASE_API_URL}/api/users/login`;
 
         try {
             const { data } = await axios.post(url, formData);
 
             if (isSignup) {
-                alert('Signup successful!');
+                alert(data.message || 'Signup successful! You can now log in.');
+                // After successful signup, switch to login mode
+                toggleMode(); 
             } else {
-                alert('Login successful!');
+                alert(data.message || 'Login successful!');
                 localStorage.setItem("isLoggedIn", true);
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
+                navigate('/'); // Redirect to home page
             }
-            window.location.href = '/'; // Redirect to home on success
 
         } catch (err) {
             console.error('Local Auth Error:', err);
-            setError(err.response?.data?.message || err.response?.data?.error || 'Something went wrong');
+            setError(err.response?.data?.message || err.message || 'Something went wrong.');
         }
     };
 
-    // Handler for successful Google authentication
-    const handleGoogleSuccess = async (credentialResponse) => {
-        console.log("Google Login/Signup Success:", credentialResponse);
-        setError(''); // Clear previous errors
-
+    const handleFirebaseGoogleSignIn = async () => {
+        setError('');
         try {
-            // Send the Google ID token to your backend for verification
-            const response = await axios.post('http://localhost:3000/api/auth/google', {
-                token: credentialResponse.credential
+            const result = await signInWithPopup(auth, provider);
+            const idToken = await result.user.getIdToken();
+
+            console.log("Firebase Google Login Success:", result.user);
+
+            const response = await axios.post(`${BASE_API_URL}/api/auth/google-firebase`, {
+                token: idToken
             });
 
             if (response.data) {
-                alert(`Welcome, ${response.data.name || response.data.email || 'User'}! Authenticated via Google.`);
+                alert(`Welcome, ${response.data.user.fullName || response.data.user.email || 'User'}! Authenticated via Google.`);
                 localStorage.setItem("isLoggedIn", true);
                 localStorage.setItem('token', response.data.token);
-                localStorage.setItem('user', JSON.stringify(response.data.user)); // Assuming your backend returns user data
-                window.location.href = '/'; // Redirect to home on success
+                localStorage.setItem('user', JSON.stringify(response.data.user));
+                navigate('/'); // Redirect to home page
             }
 
         } catch (err) {
-            console.error("Error during Google authentication with backend:", err);
-            setError(err.response?.data?.message || err.response?.data?.error || 'Google authentication failed on backend.');
+            console.error("Error during Firebase Google authentication:", err);
+            const errorMessage = err.message || 'Firebase Google authentication failed.';
+            setError(errorMessage);
         }
     };
 
-    // Handler for failed Google authentication
-    const handleGoogleError = () => {
-        console.log('Google Login/Signup Failed');
-        setError('Google authentication failed. Please try again.');
-    };
-
     return (
-        <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+        <>
             <Navbar />
             <div className="flex flex-col min-h-[calc(100vh-120px)] items-center justify-center bg-gray-100 py-8 px-4">
-                {/*
-                    The errors you are seeing (TS1005, TS1381) are typically caused by
-                    incorrect syntax *inside* the <style>{`...`}</style> block.
-                    Ensure the CSS is a plain string. No JavaScript template literals
-                    or variable interpolations should be directly within this string
-                    unless the entire string itself is a template literal.
-                    The previous code's CSS was already correctly formatted as a single string.
-                    Perhaps an accidental character or incomplete curly brace was added.
-                    I've verified the CSS below to ensure it's a valid string literal.
-                */}
                 <style>{`
                     body {
                         font-family: 'Inter', sans-serif;
@@ -180,7 +161,7 @@ const Login = () => { // Renamed from AuthPage to Login as per your file name
                         .auth-section {
                             border-radius: 0 0.75rem 0.75rem 0;
                         }
-                         .reverse-layout .auth-section {
+                        .reverse-layout .auth-section {
                             border-radius: 0.75rem 0 0 0.75rem;
                         }
                     }
@@ -360,7 +341,6 @@ const Login = () => { // Renamed from AuthPage to Login as per your file name
                 `}</style>
 
                 <div className={`main-container ${isSignup ? 'reverse-layout' : ''}`}>
-                    {/* Banner Section with Animation */}
                     <div className="banner-section">
                         <div className={`banner-content ${bannerAnimate ? 'active' : ''}`}>
                             <h2>Your Journey Starts Here!</h2>
@@ -371,7 +351,6 @@ const Login = () => { // Renamed from AuthPage to Login as per your file name
 
                     <div className="auth-section">
                         <h1>Welcome!</h1>
-                        {/* Error message display */}
                         {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
 
                         <div className="tab-buttons">
@@ -426,12 +405,17 @@ const Login = () => { // Renamed from AuthPage to Login as per your file name
                                     <span>OR</span>
                                 </div>
 
-                                <div className="google-login-button-wrapper">
-                                    <GoogleLogin
-                                        onSuccess={handleGoogleSuccess}
-                                        onError={handleGoogleError}
-                                    />
-                                </div>
+                                {/* Firebase Google Sign-in Button */}
+                                <button
+                                    type="button"
+                                    onClick={handleFirebaseGoogleSignIn}
+                                    className="btn bg-red-600 hover:bg-red-700 text-white"
+                                >
+                                    <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12.24 10.27v2.4h3.64c-.16 1.09-.64 2-1.37 2.68-.73.68-1.7.99-2.73.99-2.2 0-3.92-1.63-3.92-3.88s1.72-3.88 3.92-3.88c1.23 0 2.29.47 3.09 1.25l1.7-1.7c-1.07-1.07-2.5-1.74-4.2-1.74-3.56 0-6.4 2.89-6.4 6.45s2.84 6.45 6.4 6.45c3.56 0 6.4-2.89 6.4-6.45 0-.46-.07-.9-.19-1.32h-6.21zm-1.89-4.82c-.85-.85-1.92-1.3-3.08-1.3-2.18 0-3.9 1.76-3.9 3.92s1.72 3.92 3.9 3.92c1.16 0 2.23-.45 3.08-1.3l-1.42-1.4z" />
+                                    </svg>
+                                    Sign in with Google
+                                </button>
                             </form>
                         </div>
 
@@ -495,10 +479,11 @@ const Login = () => { // Renamed from AuthPage to Login as per your file name
                                     <input
                                         type="password"
                                         id="confirm-password"
-                                        name="confirm_password"
+                                        name="confirmPassword"
                                         className="form-input"
                                         placeholder="Confirm your password"
-                                        onChange={handleChange} // You'd need to add confirm_password to formData or handle validation here
+                                        value={formData.confirmPassword}
+                                        onChange={handleChange}
                                         required
                                     />
                                 </div>
@@ -508,19 +493,24 @@ const Login = () => { // Renamed from AuthPage to Login as per your file name
                                     <span>OR</span>
                                 </div>
 
-                                <div className="google-login-button-wrapper">
-                                    <GoogleLogin
-                                        onSuccess={handleGoogleSuccess}
-                                        onError={handleGoogleError}
-                                    />
-                                </div>
+                                {/* Firebase Google Sign-in Button */}
+                                <button
+                                    type="button"
+                                    onClick={handleFirebaseGoogleSignIn}
+                                    className="btn bg-red-600 hover:bg-red-700 text-white"
+                                >
+                                    <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12.24 10.27v2.4h3.64c-.16 1.09-.64 2-1.37 2.68-.73.68-1.7.99-2.73.99-2.2 0-3.92-1.63-3.92-3.88s1.72-3.88 3.92-3.88c1.23 0 2.29.47 3.09 1.25l1.7-1.7c-1.07-1.07-2.5-1.74-4.2-1.74-3.56 0-6.4 2.89-6.4 6.45s2.84 6.45 6.4 6.45c3.56 0 6.4-2.89 6.4-6.45 0-.46-.07-.9-.19-1.32h-6.21zm-1.89-4.82c-.85-.85-1.92-1.3-3.08-1.3-2.18 0-3.9 1.76-3.9 3.92s1.72 3.92 3.9 3.92c1.16 0 2.23-.45 3.08-1.3l-1.42-1.4z" />
+                                    </svg>
+                                    Sign up with Google
+                                </button>
                             </form>
                         </div>
                     </div>
                 </div>
             </div>
             <Footer />
-        </GoogleOAuthProvider>
+        </>
     );
 };
 

@@ -22,7 +22,7 @@ const ProductDetails = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 2000);
-    fetch("http://localhost:5000/products")
+    fetch("http://localhost:3000/api/products/")
       .then((res) => res.json())
       .then((data) => setProducts(data))
       .catch((err) => console.error("❌ Fetch error:", err));
@@ -41,7 +41,7 @@ const ProductDetails = () => {
     e.preventDefault();
     if (isAddBtnDisabled) return;
 
-    fetch("http://localhost:5000/products", {
+    fetch("http://localhost:3000/api/products", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData)
@@ -87,8 +87,6 @@ const ProductDetails = () => {
     <>
       <Navbar />
       <div className="min-h-screen bg-gray-50 px-4 py-10">
-        
-
         <div className="max-w-4xl mx-auto bg-white shadow-md rounded-xl p-6 mt-6">
           <h2 className="text-2xl font-semibold text-blue-700 mb-4">Product to sell</h2>
 
@@ -105,14 +103,24 @@ const ProductDetails = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Add product category</label>
-                <input
-                  type="text"
+                <label className="block text-sm font-medium text-gray-700">Select product category</label>
+                <select
                   name="category"
                   value={formData.category}
                   onChange={handleInputChange}
                   className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
-                />
+                >
+                  <option value="">-- Select Category --</option>
+                  <option value="fashion">fashion</option>
+                  <option value="electronic">electronic</option>
+                  <option value="furniture">furniture</option>
+                  <option value="kitchen">kitchen</option>
+                  <option value="toys">toys</option>
+                  <option value="cosmetic">cosmetic</option>
+                  <option value="food">food</option>
+                  <option value="sports">sports</option>
+                  <option value="appliances">appliances</option>
+                </select>
               </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700">Add product description</label>

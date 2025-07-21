@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import urbanTalesLogo from "../assets/UrbanTales.png"; // Add your logo file path
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ const Navbar = () => {
     { label: "Home", href: "/" },
     {
       label: "Fashion",
-      href: "/category?cat=fashionProducts",
+      href: "/category?cat=fashion",
       links: ["Men", "Women", "Kids", "Accessories", "Luggages"],
     },
     {
@@ -36,18 +37,18 @@ const Navbar = () => {
     },
     {
       label: "Home & Furniture",
-      href: "/category?cat=furnitureProducts",
+      href: "/category?cat=furniture",
       links: ["Living Room", "Bedroom", "Kitchen", "Office", "Outdoor"],
     },
-    { label: "Appliances", href: "/category?cat=kitchenProducts" },
+    { label: "Appliances", href: "/category?cat=appliances" },
     {
       label: "Toys",
-      href: "/category?cat=childrenToysProducts",
+      href: "/category?cat=toys",
       links: ["Action Figures", "Dolls", "Puzzles", "Board Games"],
     },
-    { label: "Cosmetics", href: "/category?cat=cosmeticProducts" },
-    { label: "Kilos", href: "/category?cat=foodProducts" },
-    { label: "Sports", href: "/category?cat=sportsProducts" },
+    { label: "Cosmetics", href: "/category?cat=cosmetic" },
+    { label: "Kilos", href: "/category?cat=food" },
+    { label: "Sports", href: "/category?cat=sports" },
   ];
 
   return (
@@ -55,8 +56,13 @@ const Navbar = () => {
       {/* Top Section */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-6">
         {/* Logo */}
-        <div className="text-3xl font-bold text-blue-700 whitespace-nowrap">
-          𝓩𝓪𝓻𝓿𝓸𝓬
+        <div className="flex items-center">
+          <img
+            src={urbanTalesLogo}
+            alt="Urban Tales Logo"
+            className="h-20 w-auto object-contain cursor-pointer"
+            onClick={() => navigate("/")}
+          />
         </div>
 
         {/* Search Bar */}

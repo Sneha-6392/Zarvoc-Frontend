@@ -8,7 +8,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:5000/products')
+    fetch('http://localhost:3000/products')
       .then(res => res.json())
       .then(data => {
         setProducts(data);
@@ -22,7 +22,7 @@ const Dashboard = () => {
 
   const handleDelete = (id) => {
     if (window.confirm('🗑️ Are you sure you want to delete this product?')) {
-      fetch(`http://localhost:5000/products/${id}`, {
+      fetch(`http://localhost:3000/products/${id}`, {
         method: 'DELETE',
       })
         .then(res => res.json())
