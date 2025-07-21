@@ -1,20 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import Navbar from '../Components/Navbar'; // Assuming Navbar is part of your theme
-import Footer from '../Components/Footer'; // Assuming Footer is part of your theme
-import { HashLoader } from 'react-spinners'; // Import HashLoader
+import Navbar from '../Components/Navbar';
+import Footer from '../Components/Footer';
+import { HashLoader } from 'react-spinners';
 
 function HelpCenter() {
   const [isTawkApiLoaded, setIsTawkApiLoaded] = useState(false);
-  const [searchQuery, setSearchQuery] = useState(''); // State for search query
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate a loading period for 3 seconds
     const timer = setTimeout(() => {
-      setLoading(false); // Set loading to false after the simulated delay
-    }, 3000); // 3 seconds delay
+      setLoading(false);
+    }, 3000);
 
     window.Tawk_API = window.Tawk_API || {};
     window.Tawk_API.onLoad = function () {
@@ -24,11 +23,11 @@ function HelpCenter() {
       setIsTawkApiLoaded(true);
     }
 
-    return () => clearTimeout(timer); // Clean up the timer on component unmount
+    return () => clearTimeout(timer);
   }, []);
 
   const handleSearch = (event) => {
-    setSearchQuery(event.target.value.toLowerCase()); // Update search query state
+    setSearchQuery(event.target.value.toLowerCase());
   };
 
   const startLiveChat = () => {
@@ -50,10 +49,9 @@ function HelpCenter() {
     window.open(gmailComposeUrl, '_blank');
   };
 
-  // Function to filter FAQs based on search query
   const filterFaqs = (faqs) => {
     if (!searchQuery) {
-      return faqs; // If no search query, return all FAQs
+      return faqs;
     }
     return faqs.filter(faq => 
       faq.question.toLowerCase().includes(searchQuery) || 
@@ -61,7 +59,6 @@ function HelpCenter() {
     );
   };
 
-  // Define your FAQ data (consider moving this to a separate data file if it grows large)
   const faqData = {
     orderingPayments: [
       { question: "How do I place an order?", answer: "To place an order, simply browse our categories, add desired items to your cart, and proceed to checkout. Follow the on-screen prompts to enter your shipping details and payment information." },
@@ -89,11 +86,9 @@ function HelpCenter() {
     ],
   };
 
-  // Show loader while loading is true
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
-        {/* HashLoader component with customizable color and size */}
         <HashLoader color="#070A52" size={80} />
       </div>
     );
@@ -101,10 +96,10 @@ function HelpCenter() {
 
   return (
     <>
-      <Navbar /> {/* Assuming Navbar is part of your website's consistent theme */}
-      <div className="bg-gray-50 text-gray-900 font-sans min-h-screen"> {/* Main container background and text color */}
+      <Navbar />
+      <div className="bg-gray-50 text-gray-900 font-sans min-h-screen">
         <div className="container mx-auto p-6 md:p-10">
-          <header className="text-center mb-12 pt-8"> {/* Added padding top */}
+          <header className="text-center mb-12 pt-8">
             <h1 className="text-5xl font-extrabold text-gray-900 leading-tight">UrbanTales Help Center</h1>
             <p className="text-xl text-gray-700 mt-4 max-w-2xl mx-auto">
               Your guide to a seamless shopping experience. Find answers to common questions, explore our FAQs, or connect with our support team.
@@ -113,7 +108,6 @@ function HelpCenter() {
 
           <hr className="my-10 border-gray-300" />
 
-          {/* Search Bar Section */}
           <section className="max-w-3xl mx-auto mb-16 p-6 bg-white rounded-xl shadow-lg">
             <h2 className="text-3xl font-bold mb-5 text-gray-800 text-center">Search Our Knowledge Base</h2>
             <div className="relative">
@@ -135,11 +129,9 @@ function HelpCenter() {
 
           <hr className="my-10 border-gray-300" />
 
-          {/* Popular Topics Section */}
           <section className="max-w-5xl mx-auto mb-16">
             <h2 className="text-3xl font-bold mb-8 text-gray-800 text-center">Popular Topics</h2>
 
-            {/* Ordering & Payments */}
             {filterFaqs(faqData.orderingPayments).length > 0 && (
               <div className="bg-white p-8 rounded-xl shadow-lg mb-8 hover:shadow-xl transition duration-300">
                 <h3 className="text-2xl font-bold mb-6 text-gray-800 flex items-center">
@@ -156,7 +148,6 @@ function HelpCenter() {
               </div>
             )}
 
-            {/* Shipping & Delivery */}
             {filterFaqs(faqData.shippingDelivery).length > 0 && (
               <div className="bg-white p-8 rounded-xl shadow-lg mb-8 hover:shadow-xl transition duration-300">
                 <h3 className="text-2xl font-bold mb-6 text-gray-800 flex items-center">
@@ -183,7 +174,6 @@ function HelpCenter() {
               </div>
             )}
 
-            {/* Returns & Refunds */}
             {filterFaqs(faqData.returnsRefunds).length > 0 && (
               <div className="bg-white p-8 rounded-xl shadow-lg mb-8 hover:shadow-xl transition duration-300">
                 <h3 className="text-2xl font-bold mb-6 text-gray-800 flex items-center">
@@ -200,7 +190,6 @@ function HelpCenter() {
               </div>
             )}
 
-            {/* Account Management */}
             {filterFaqs(faqData.accountManagement).length > 0 && (
               <div className="bg-white p-8 rounded-xl shadow-lg mb-8 hover:shadow-xl transition duration-300">
                 <h3 className="text-2xl font-bold mb-6 text-gray-800 flex items-center">
@@ -233,7 +222,6 @@ function HelpCenter() {
               </div>
             )}
 
-            {/* No results message */}
             {!searchQuery || (
               filterFaqs(faqData.orderingPayments).length === 0 &&
               filterFaqs(faqData.shippingDelivery).length === 0 &&
@@ -248,7 +236,6 @@ function HelpCenter() {
 
           <hr className="my-10 border-gray-300" />
 
-          {/* Contact Section */}
           <section className="max-w-5xl mx-auto mb-16 text-center">
             <h2 className="text-3xl font-bold mb-8 text-gray-800">Need More Help? Talk to Us!</h2>
             <p className="text-xl text-gray-700 mb-10 max-w-2xl mx-auto">
@@ -256,7 +243,6 @@ function HelpCenter() {
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* Live Chat */}
               <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition duration-300 flex flex-col justify-between">
                 <div>
                   <h3 className="text-2xl font-bold mb-4 text-gray-800 flex items-center justify-center md:justify-start">
@@ -277,7 +263,6 @@ function HelpCenter() {
                 </button>
               </div>
 
-              {/* Email Support */}
               <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition duration-300 flex flex-col justify-between">
                 <div>
                   <h3 className="text-2xl font-bold mb-4 text-gray-800 flex items-center justify-center md:justify-start">
@@ -298,7 +283,6 @@ function HelpCenter() {
                 </button>
               </div>
 
-              {/* Phone Support */}
               <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition duration-300 flex flex-col justify-between">
                 <div>
                   <h3 className="text-2xl font-bold mb-4 text-gray-800 flex items-center justify-center md:justify-start">
@@ -312,7 +296,7 @@ function HelpCenter() {
                   </p>
                 </div>
                 <a
-                  href="tel:+91XXXXXXXXXX" // Remember to replace XXXXXXXXXX with your actual phone number
+                  href="tel:+91XXXXXXXXXX"
                   className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out inline-block w-full md:w-auto mt-auto focus:outline-none focus:ring-4 focus:ring-purple-300"
                 >
                   Call Us
@@ -324,7 +308,6 @@ function HelpCenter() {
 
           <hr className="my-10 border-gray-300" />
 
-          {/* Copyright Section - Updated */}
           <section className="max-w-3xl mx-auto text-center mt-12 mb-6">
             <p className="text-lg text-gray-600">
               &copy; {new Date().getFullYear()} UrbanTales. All rights reserved.
@@ -332,7 +315,7 @@ function HelpCenter() {
           </section>
         </div>
       </div>
-      <Footer /> {/* Assuming Footer is part of your website's consistent theme */}
+      <Footer />
     </>
   );
 }
