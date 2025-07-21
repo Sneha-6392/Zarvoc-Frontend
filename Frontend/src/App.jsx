@@ -25,6 +25,8 @@ import AuthPage from './Pages/AuthPage.jsx';
 import SellerAuthPage from './Pages/SellerAuthPage.jsx';
 import Ai from './Components/Ai.jsx';
 import HelpCenter from './Pages/HelpCenter.jsx';
+import Signup from './Pages/Signup.jsx';
+import Category from './Pages/Category.jsx';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -59,6 +61,12 @@ function App() {
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/sellerlogin" element={<SellerAuthPage />} />
           <Route path="/helpcenter" element={<HelpCenter />} />
+          <Route path="/register" element={<Signup />} />
+          <Route path="/category" element={<Category />} />
+          
+          {/* Add more routes as needed */}
+          
+          {/* Fallback route */}
         </Routes>
         <Ai />
       </BrowserRouter>
