@@ -4,6 +4,7 @@ import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 import { Link } from "react-router-dom";
 import logo from "../assets/Zarvoc2.png";
+import { HashLoader } from "react-spinners"; // Import HashLoader
 
 // Leaflet imports for map functionality
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
@@ -48,7 +49,7 @@ LocationMarker.propTypes = {
 };
 
 export default function ContactUs() {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Add loading state
   const [result, setResult] = useState("");
   const [faqEmail, setFaqEmail] = useState("");
   const [faqMessage, setFaqMessage] = useState("");
@@ -63,6 +64,7 @@ export default function ContactUs() {
   const defaultMapCenter = [12.9716, 77.5946]; // Coordinates for Bengaluru, India (Zarvoc HQ)
 
   useEffect(() => {
+    // Set a timeout to hide the loader after 2 seconds
     const timer = setTimeout(() => setLoading(false), 2000);
 
     if (navigator.geolocation) {
@@ -170,10 +172,12 @@ export default function ContactUs() {
     }
   };
 
+  // Show loader while loading is true
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
-        <img src={logo} alt="Zarvoc Logo" className="w-40 h-40 animate-pulse" />
+        {/* HashLoader component with customizable color and size */}
+        <HashLoader color="#3182CE" size={80} />
       </div>
     );
   }
@@ -318,8 +322,8 @@ export default function ContactUs() {
               <h4 className="text-lg font-medium">Connecting Near and Far</h4>
               {userLocation.latitude && userLocation.longitude && (
                   <p className="mt-2 text-sm">
-                      Your current coordinates: <br />
-                      Latitude: {userLocation.latitude.toFixed(6)}, Longitude: {userLocation.longitude.toFixed(6)}
+                    Your current coordinates: <br />
+                    Latitude: {userLocation.latitude.toFixed(6)}, Longitude: {userLocation.longitude.toFixed(6)}
                   </p>
               )}
               <p className="mt-2 text-sm">

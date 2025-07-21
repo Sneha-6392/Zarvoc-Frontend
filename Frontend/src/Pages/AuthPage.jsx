@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import { HashLoader } from "react-spinners"; // Import HashLoader
 
 // IMPORTANT: Replace "YOUR_GOOGLE_CLIENT_ID_HERE" with your actual Google Client ID.
 // Obtain this from the Google Google Cloud Console (APIs & Services -> Credentials).
@@ -11,8 +12,11 @@ const AuthPage = () => {
     const [activeForm, setActiveForm] = useState('signin'); // Default to 'signin'
     // State to trigger banner content animation
     const [bannerAnimate, setBannerAnimate] = useState(false);
+    // State to manage initial loading for the entire page
+    const [pageLoading, setPageLoading] = useState(true);
 
     // Effect to determine the initial active form based on URL query parameter
+    // and to handle initial page loading
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
         const mode = urlParams.get('mode'); // Check for '?mode=signup' or '?mode=signin' in URL
@@ -23,8 +27,14 @@ const AuthPage = () => {
             // Default to signin if no mode or an unknown mode is specified
             setActiveForm('signin');
         }
-        // Immediately set animate to true to show initial content
-        setBannerAnimate(true);
+        // Set a timeout to hide the page loader after a short delay (e.g., 500ms)
+        const loaderTimer = setTimeout(() => {
+            setPageLoading(false);
+            // After loader is hidden, immediately set bannerAnimate to true to show initial content
+            setBannerAnimate(true);
+        }, 500); // Adjust this duration as needed
+
+        return () => clearTimeout(loaderTimer); // Cleanup the timer
     }, []); // Run only once on component mount
 
     // Function to toggle between Sign In and Sign Up forms
@@ -76,6 +86,15 @@ const AuthPage = () => {
         alert('Google authentication failed. Please try again.');
     };
 
+    // Show HashLoader while pageLoading is true
+    if (pageLoading) {
+        return (
+            <div className="flex items-center justify-center h-screen bg-white">
+                <HashLoader color="#42d9e4" size={80} /> {/* Using the same blue from your design */}
+            </div>
+        );
+    }
+
     return (
         <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
             <style>{`
@@ -125,7 +144,7 @@ const AuthPage = () => {
                         /* Border radius adjustments for desktop when layout changes */
                         border-radius: 0 0.75rem 0.75rem 0; /* Default position (left) */
                     }
-                     .reverse-layout .auth-section {
+                    .reverse-layout .auth-section {
                         border-radius: 0.75rem 0 0 0.75rem; /* Flipped position (right) */
                     }
                 }
@@ -171,7 +190,7 @@ const AuthPage = () => {
 
                 .tab-button:hover { background-color: #e5e7eb; }
                 .tab-button.active {
-                    background-color: #42d9e4;
+                    background-color: #42d9e4; /* Your theme color */
                     color: #fff;
                     box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.1);
                 }
@@ -198,7 +217,7 @@ const AuthPage = () => {
                 }
                 .form-input:focus {
                     outline: none;
-                    border-color: #42d9e4;
+                    border-color: #42d9e4; /* Your theme color */
                     box-shadow: 0 0 0 0.1875rem rgba(59, 130, 246, 0.2);
                 }
 
@@ -283,27 +302,6 @@ const AuthPage = () => {
                     opacity: 1;
                     transform: translateY(0);
                 }
-
-
-                .banner-section h2 {
-                    font-size: 2.5rem;
-                    font-weight: 800;
-                    line-height: 1.2;
-                    margin-bottom: 0.9375rem;
-                }
-                .banner-section p {
-                    font-size: 1.25rem;
-                    font-weight: 300;
-                    opacity: 0.9;
-                    margin-bottom: 1.875rem;
-                }
-                .banner-image {
-                    max-width: 100%;
-                    height: auto;
-                    border-radius: 0.5rem;
-                    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.2);
-                    margin-top: 1.25rem;
-                }
             `}</style>
 
             <div className={`main-container ${activeForm === 'signup' ? 'reverse-layout' : ''}`}>
@@ -364,7 +362,7 @@ const AuthPage = () => {
                     {/* Sign Up Form Section (right side) */}
                     <div id="signup-form-section" className={`form-section ${activeForm === 'signup' ? 'active' : ''}`}>
                         <form onSubmit={(e) => e.preventDefault()}>
-                             <div className="form-group">
+                            <div className="form-group">
                                 <label htmlFor="signup-name">Full Name</label>
                                 <input type="text" id="signup-name" name="name" className="form-input" placeholder="Enter your full name" />
                             </div>

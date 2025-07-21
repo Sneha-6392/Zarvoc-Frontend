@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import urbanTalesLogo from "../assets/UrbanTales.png"; // Add your logo file path
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -23,13 +24,10 @@ const Navbar = () => {
   };
 
   const navItems = [
-    {
-      label: "Home",
-      href: "/",
-    },
+    { label: "Home", href: "/" },
     {
       label: "Fashion",
-      href: "/category?cat=fashionProducts",
+      href: "/category?cat=fashion",
       links: ["Men", "Women", "Kids", "Accessories", "Luggages"],
     },
     {
@@ -39,30 +37,18 @@ const Navbar = () => {
     },
     {
       label: "Home & Furniture",
-      href: "/category?cat=furnitureProducts",
+      href: "/category?cat=furniture",
       links: ["Living Room", "Bedroom", "Kitchen", "Office", "Outdoor"],
     },
-    {
-      label: "Appliances",
-      href: "/category?cat=kitchenProducts",
-    },
+    { label: "Appliances", href: "/category?cat=appliances" },
     {
       label: "Toys",
-      href: "/category?cat=childrenToysProducts",
+      href: "/category?cat=toys",
       links: ["Action Figures", "Dolls", "Puzzles", "Board Games"],
     },
-    {
-      label: "Cosmetics",
-      href: "/category?cat=cosmeticProducts",
-    },
-    {
-      label: "Kilos",
-      href: "/category?cat=foodProducts",
-    },
-    {
-      label: "Sports",
-      href: "/category?cat=sportsProducts",
-    },
+    { label: "Cosmetics", href: "/category?cat=cosmetic" },
+    { label: "Kilos", href: "/category?cat=food" },
+    { label: "Sports", href: "/category?cat=sports" },
   ];
 
   return (
@@ -70,8 +56,13 @@ const Navbar = () => {
       {/* Top Section */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-6">
         {/* Logo */}
-        <div className="text-3xl font-bold text-blue-700 whitespace-nowrap">
-          𝓩𝓪𝓻𝓿𝓸𝓬
+        <div className="flex items-center">
+          <img
+            src={urbanTalesLogo}
+            alt="Urban Tales Logo"
+            className="h-20 w-auto object-contain cursor-pointer"
+            onClick={() => navigate("/")}
+          />
         </div>
 
         {/* Search Bar */}
@@ -170,23 +161,30 @@ const Navbar = () => {
 
       {/* Bottom Nav Links */}
       <div className="mt-6">
-        <div className="bg-gradient-to-r from-sky-400 to-blue-500 text-white text-center py-2 px-4 rounded-full font-semibold shadow-md hover:from-sky-500 hover:to-blue-600 cursor-pointer transition-colors duration-300">
-          <ul className="flex flex-wrap justify-center items-center gap-10">
+        <div className="bg-gradient-to-r from-sky-400 to-blue-500 text-white text-center py-2 px-4 rounded-full font-semibold shadow-md">
+          <ul className="flex flex-wrap justify-center items-center gap-20">
             {navItems.map((item, idx) => (
-              <li key={idx} className="relative group inline-block mx-2">
+              <li key={idx} className="relative group inline-block">
                 <Link
                   to={item.href || "#"}
-                  className="text-white hover:text-gray-200"
+                  className="text-white hover:text-gray-200 flex items-center"
                 >
-                  {item.label} {item.links && "▾"}
+                  {item.label} {item.links && <span className="ml-1">▾</span>}
                 </Link>
+
                 {item.links && (
-                  <ul className="absolute hidden group-hover:block bg-white text-gray-800 mt-2 rounded-md shadow-lg z-10 py-2 px-3 text-left min-w-[10rem]">
+                  <ul className="absolute left-0 mt-2 bg-white text-gray-800 rounded-md shadow-lg z-50 py-2 px-3 text-left min-w-[10rem] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                     {item.links.map((sub, subIdx) => (
-                      <li key={subIdx} className="py-1">
-                        <a href="#" className="hover:text-blue-500">
-                          {typeof sub === "string" ? sub : sub.name}
-                        </a>
+                      <li
+                        key={subIdx}
+                        className="py-2 px-3 hover:bg-gray-100 rounded"
+                      >
+                        <Link
+                          to={`${item.href}&sub=${encodeURIComponent(sub)}`}
+                          className="block hover:text-blue-500"
+                        >
+                          {sub}
+                        </Link>
                       </li>
                     ))}
                   </ul>

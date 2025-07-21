@@ -2,48 +2,54 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
-import logo from "../assets/Zarvoc2.png";
 import bgImage from "../assets/BG.png";
+import { HashLoader } from "react-spinners"; // Import HashLoader
+
 const AboutUs = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Set a timeout to hide the loader after 2 seconds
     const timer = setTimeout(() => setLoading(false), 2000);
-    return () => clearTimeout(timer);
+    return () => clearTimeout(timer); // Clear timeout on component unmount
   }, []);
 
   useEffect(() => {
+    // This effect runs only after the loading state is false
     if (!loading) {
       const galaxy = document.getElementById("galaxy");
       const starCount = 60;
-      galaxy.innerHTML = "";
+      galaxy.innerHTML = ""; // Clear existing stars
 
+      // Create and append stars to the galaxy background
       for (let i = 0; i < starCount; i++) {
         const star = document.createElement("div");
-        const size = Math.random() * 2 + 1;
-        const delay = Math.random() * 5;
+        const size = Math.random() * 2 + 1; // Random size for stars
+        const delay = Math.random() * 5; // Random animation delay
 
         star.style.width = `${size}px`;
         star.style.height = `${size}px`;
-        star.style.top = `${Math.random() * 100}vh`;
-        star.style.left = `${Math.random() * 100}vw`;
+        star.style.top = `${Math.random() * 100}vh`; // Random vertical position
+        star.style.left = `${Math.random() * 100}vw`; // Random horizontal position
         star.style.position = "absolute";
-        star.style.borderRadius = "9999px";
-        star.style.backgroundColor = "#90cdf4";
+        star.style.borderRadius = "9999px"; // Make it a circle
+        star.style.backgroundColor = "#90cdf4"; // Light blue color
         star.style.opacity = "0.7";
-        star.style.boxShadow = "0 0 8px #bee3f8";
-        star.style.animation = `floatStar 6s ease-in-out ${delay}s infinite`;
+        star.style.boxShadow = "0 0 8px #bee3f8"; // Glow effect
+        star.style.animation = `floatStar 6s ease-in-out ${delay}s infinite`; // Apply animation
 
         galaxy.appendChild(star);
       }
     }
-  }, [loading]);
+  }, [loading]); // Dependency on loading state
 
+  // Show loader while loading is true
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
-        <img src={logo} alt="Zarvoc Logo" className="w-40 h-40 animate-pulse" />
+        {/* HashLoader component with customizable color and size */}
+        <HashLoader color="#3182CE" size={80} />
       </div>
     );
   }
@@ -60,6 +66,7 @@ const AboutUs = () => {
         `}
       </style>
 
+      {/* Background galaxy for stars */}
       <div
         id="galaxy"
         className="fixed top-0 left-0 w-full h-full -z-10 overflow-hidden pointer-events-none"
@@ -67,7 +74,7 @@ const AboutUs = () => {
 
       <Navbar />
 
-      {/*Hero Section*/}
+      {/* Hero Section */}
       <section
         className="text-center py-32 px-5 relative bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${bgImage})` }}
@@ -194,7 +201,7 @@ const AboutUs = () => {
               key={i}
               className="text-center bg-white/60 p-6 rounded-xl shadow-md border border-blue-100 hover:scale-[1.05] transition-transform duration-300 backdrop-blur"
             >
-              {/* <img src={member.img} alt={member.name} className="w-24 h-24 rounded-full object-cover mx-auto mb-4 border-4 border-blue-400 shadow" /> */}
+              {/* Placeholder for team member image */}
               <div className="w-24 h-24 rounded-full bg-blue-200 mx-auto mb-4 border-4 border-blue-400 shadow"></div>
               <h3 className="text-lg font-semibold text-blue-800">
                 {member.name}
@@ -208,7 +215,9 @@ const AboutUs = () => {
       {/* Map Section */}
       <section className="max-w-7xl mx-auto px-5 py-20">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-semibold text-blue-700">Our Location</h2>
+          <h2 className="text-3xl font-semibold text-blue-700">
+            Our Location
+          </h2>
           <div className="h-1 w-20 mx-auto mt-4 bg-blue-400 rounded"></div>
         </div>
         <div className="rounded-lg overflow-hidden shadow-xl border border-blue-100">
