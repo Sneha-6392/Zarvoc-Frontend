@@ -1,35 +1,56 @@
 import React, { useState, useEffect } from 'react';
 import { HashLoader } from 'react-spinners'; // Import HashLoader
+import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
 
 const SecureCheckout = () => {
   const [selectedPayment, setSelectedPayment] = useState('');
   const [couponCode, setCouponCode] = useState('');
   const [upiId, setUpiId] = useState('');
   const [loading, setLoading] = useState(true); // Add loading state
+  const navigate = useNavigate(); // Initialize useNavigate hook
+
+  // Dummy data for example purposes. In a real app, these would come from your cart/backend.
+  const orderDetailsForTracking = {
+    totalAmount: '₹2,198.00', // This is your "Order Total" from SecureCheckout
+    shipTo: 'Priya Sharma', // Assuming "xyz" is a placeholder for the actual name
+    deliveryAddress: 'EWS 246-247, Ravi khand banglabazar, LUCKNOW, UTTAR PRADESH, 226012, India',
+    orderNumber: '#UT' + Math.floor(100000 + Math.random() * 900000).toString(), // Generate a random order ID for now
+  };
 
   const isPayButtonEnabled = selectedPayment !== '';
   const isCouponValid = couponCode.trim() !== '';
   const isUpiValid = upiId.trim() !== '';
 
   useEffect(() => {
-    // Simulate a loading period for 3 seconds
     const timer = setTimeout(() => {
-      setLoading(false); // Set loading to false after the simulated delay
-    }, 3000); // 3 seconds delay
+      setLoading(false);
+    }, 3000);
 
-    return () => clearTimeout(timer); // Clean up the timer on component unmount
+    return () => clearTimeout(timer);
   }, []);
 
   const handlePaymentSelect = (e) => {
     setSelectedPayment(e.target.value);
   };
 
-  // Show loader while loading is true
+  const handlePayButtonClick = () => {
+    // Save order details to localStorage before navigating
+    localStorage.setItem('orderDetails', JSON.stringify(orderDetailsForTracking));
+    // localStorage.setItem('orderTotal', orderDetailsForTracking.totalAmount);
+    // localStorage.setItem('shipToName', orderDetailsForTracking.shipTo);
+    // localStorage.setItem('orderId', orderDetailsForTracking.orderNumber);
+
+    // If you are using React Router, navigate like this:
+    navigate('/track-order'); // Assuming '/track-order' is the route for your TrackOrder page
+
+    // If you are still using window.location.href (not recommended for SPAs built with React Router):
+    // window.location.href = '/track-order'; // Change 'confirmation.html' to your track order page path
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
-        {/* HashLoader component with customizable color and size */}
-        <HashLoader color="#3182CE" size={80} />
+        <HashLoader color="#070A52" size={80} />
       </div>
     );
   }
@@ -51,9 +72,9 @@ const SecureCheckout = () => {
           <div className="bg-white p-4 rounded shadow">
             <div className="flex justify-between">
               <div>
-                <h2 className="font-semibold">Delivering to xyz</h2>
+                <h2 className="font-semibold">Delivering to {orderDetailsForTracking.shipTo}</h2>
                 <p className="text-sm">
-                  EWS 246-247, Ravi khand banglabazar, LUCKNOW, UTTAR PRADESH, 226012, India
+                  {orderDetailsForTracking.deliveryAddress}
                 </p>
                 <a href="#" className="text-sm text-blue-600 hover:underline">Add delivery instructions</a>
               </div>
@@ -199,7 +220,7 @@ const SecureCheckout = () => {
                 : 'bg-gray-300 text-gray-600 cursor-not-allowed'
             }`}
             disabled={!isPayButtonEnabled}
-            onClick={() => (window.location.href = 'confirmation.html')}
+            onClick={handlePayButtonClick} // Use the new handler
           >
             Use this payment method
           </button>
@@ -211,7 +232,7 @@ const SecureCheckout = () => {
             <li className="flex justify-between"><span>Promotion Applied:</span><span>- ₹148.00</span></li>
             <hr />
             <li className="flex justify-between font-semibold text-lg mt-2">
-              <span>Order Total:</span><span>₹2,198.00</span>
+              <span>Order Total:</span><span>{orderDetailsForTracking.totalAmount}</span>
             </li>
           </ul>
         </aside>
@@ -219,5 +240,6 @@ const SecureCheckout = () => {
     </div>
   );
 };
+
 
 export default SecureCheckout;

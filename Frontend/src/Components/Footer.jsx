@@ -112,8 +112,8 @@ const Footer = () => {
             Buildings Alyssa, Begonia &<br />
             Clove Embassy Tech Village,<br />
             Outer Ring Road, Devarabeesanahalli Village,<br />
-            Bengaluru, 560103,<br />
-            Karnataka, India
+            Chhouma, 560103,<br />
+            Mathura, India
           </div>
           <div className="mt-4">
             <span className="text-sm text-[#878787]">Social</span>

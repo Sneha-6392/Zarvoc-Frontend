@@ -1,9 +1,9 @@
-// src/pages/SellerDashboard.jsx
+// src/pages/Dashboard.jsx (SellerDashboard.jsx)
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
-import { FaPlus, FaBoxOpen, FaTruck, FaUndoAlt, FaSpinner, FaChartLine, FaStar, FaArrowDown, FaSearch, FaTrash, FaEye, FaEdit } from 'react-icons/fa';
+import { FaPlus, FaBoxOpen, FaTruck, FaUndoAlt, FaSpinner, FaStar, FaArrowDown, FaSearch, FaTrash, FaEye, FaUpload, FaTimes } from 'react-icons/fa';
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -14,6 +14,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
+import axios from 'axios';
 
 // Register Chart.js components
 ChartJS.register(
@@ -25,6 +26,15 @@ ChartJS.register(
   Legend
 );
 
+// --- Cloudinary Configuration ---
+// IMPORTANT: REPLACE WITH YOUR ACTUAL CLOUD VALUES
+const CLOUDINARY_CLOUD_NAME = 'dkhj3605k'; // Example: 'your_cloud_name'
+const CLOUDINARY_UPLOAD_PRESET = 'zarvoc_products'; // Example: 'your_unsigned_upload_preset'
+
+// Cloudinary URL for unsigned uploads
+const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+
+
 // --- CSS Styles ---
 const styles = `
 /* General Body and Layout */
@@ -32,7 +42,7 @@ body {
     margin: 0;
     font-family: 'Poppins', sans-serif;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-smoothing: grayscale;
+    -moz-osx-font-smoothing: grayscale;
     background-color: #f0f2f5;
     color: #333;
 }
@@ -464,6 +474,8 @@ body {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     position: relative;
     animation: fadeIn 0.3s ease-out;
+    max-height: 90vh; /* Allow modal to take up to 90% of viewport height */
+    overflow-y: auto; /* Add scrollbar if content overflows vertically */
 }
 
 @keyframes fadeIn {
@@ -588,6 +600,79 @@ body {
     border-radius: 5px;
     object-fit: cover;
 }
+
+/* Image upload area in modal */
+.modal-image-upload-area {
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+    margin-bottom: 20px;
+    background-color: #f9f9f9; /* Slightly different background for drag area */
+}
+
+.modal-image-upload-area.dragging {
+    border-color: #070A52;
+    background-color: #e0e6f3;
+}
+
+.modal-image-upload-area p {
+    color: #666;
+    margin: 10px 0;
+}
+
+.modal-image-upload-area .upload-icon {
+    font-size: 2em;
+    color: #999;
+}
+
+.modal-image-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.modal-image-preview-item {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.modal-image-preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.modal-image-preview-item .remove-image-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: rgba(255, 0, 0, 0.7);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.2s ease;
+}
+
+.modal-image-preview-item .remove-image-btn:hover {
+    background-color: red;
+}
+
 
 /* No data message */
 .no-data-message {
@@ -717,6 +802,8 @@ body {
 
     .modal-content {
         padding: 25px;
+        max-height: 90vh; /* Reapply for mobile */
+        overflow-y: auto;
     }
 
     .modal-content h2 {
@@ -737,7 +824,6 @@ body {
 // Inject styles into the head
 if (typeof document !== 'undefined') {
   const styleSheet = document.createElement("style");
-  styleSheet.type = "text/css";
   styleSheet.innerText = styles;
   document.head.appendChild(styleSheet);
 }
@@ -755,12 +841,14 @@ let mockProducts = [
     subCategory: 'Mobiles',
     thirdLevelSubCategory: 'Smartphones',
     imageUrl: 'https://placehold.co/50x50/E91E63/ffffff?text=M',
+    imageUrls: ['https://placehold.co/150x150/E91E63/ffffff?text=M1', 'https://placehold.co/150x150/E91E63/ffffff?text=M2'], // Example array
     originalPrice: 15600.00,
     price: 1800.00,
     cost: 1000.00,
     sales: 0,
     stock: 1499,
     rating: 5,
+    delivery: 'Standard'
   },
   {
     id: 'prod_002',
@@ -770,12 +858,14 @@ let mockProducts = [
     subCategory: 'Women',
     thirdLevelSubCategory: 'Apparel',
     imageUrl: 'https://placehold.co/50x50/F44336/ffffff?text=T',
+    imageUrls: ['https://placehold.co/150x150/F44336/ffffff?text=T1', 'https://placehold.co/150x150/F44336/ffffff?text=T2'],
     originalPrice: 1560.00,
     price: 1750.00,
     cost: 800.00,
     sales: 1,
     stock: 1497,
     rating: 4,
+    delivery: 'Express'
   },
   {
     id: 'prod_003',
@@ -785,12 +875,14 @@ let mockProducts = [
     subCategory: 'Women',
     thirdLevelSubCategory: 'Ethnic Wear',
     imageUrl: 'https://placehold.co/50x50/9C27B0/ffffff?text=K',
+    imageUrls: ['https://placehold.co/150x150/9C27B0/ffffff?text=K1', 'https://placehold.co/150x150/9C27B0/ffffff?text=K2'],
     originalPrice: 1600.00,
     price: 2200.00,
     cost: 1100.00,
     sales: 1,
     stock: 249,
     rating: 4,
+    delivery: 'Standard'
   },
   {
     id: 'prod_004',
@@ -800,12 +892,14 @@ let mockProducts = [
     subCategory: 'Women',
     thirdLevelSubCategory: 'Western Wear',
     imageUrl: 'https://placehold.co/50x50/2196F3/ffffff?text=B',
+    imageUrls: ['https://placehold.co/150x150/2196F3/ffffff?text=B1'],
     originalPrice: 1500.00,
     price: 2200.00,
     cost: 900.00,
     sales: 0,
     stock: 149,
     rating: 5,
+    delivery: 'Free'
   },
   {
     id: 'prod_005',
@@ -815,12 +909,14 @@ let mockProducts = [
     subCategory: 'Women',
     thirdLevelSubCategory: 'Ethnic Wear',
     imageUrl: 'https://placehold.co/50x50/FF9800/ffffff?text=D',
+    imageUrls: ['https://placehold.co/150x150/FF9800/ffffff?text=D1', 'https://placehold.co/150x150/FF9800/ffffff?text=D2'],
     originalPrice: 1500.00,
     price: 1800.00,
     cost: 750.00,
     sales: 0,
     stock: 1491,
     rating: 4,
+    delivery: 'Standard'
   },
 ];
 
@@ -932,8 +1028,16 @@ const calculateAnalyticsData = () => {
 const getSellerInfo = () => new Promise(resolve => setTimeout(() => resolve({...sellerInfo}), 300));
 const updateSellerInfo = (newInfo) => new Promise(resolve => setTimeout(() => { sellerInfo = { ...sellerInfo, ...newInfo }; resolve({ success: true, seller: sellerInfo }); }, 500));
 const getProducts = () => new Promise(resolve => setTimeout(() => resolve([...mockProducts]), 500));
+
+// Updated addProduct mock API to handle imageUrls array
 const addProduct = (newProduct) => new Promise(resolve => setTimeout(() => {
-    const productWithId = { ...newProduct, id: `prod_${Date.now()}` };
+    const productWithId = {
+        ...newProduct,
+        id: `prod_${Date.now()}`,
+        imageUrl: newProduct.imageUrls[0] || 'https://placehold.co/50x50/cccccc/ffffff?text=No+Img', // Use first image as main
+        sales: 0, // Ensure new products start with 0 sales
+        rating: 0 // Ensure new products start with 0 rating
+    };
     mockProducts.push(productWithId);
     resolve({ success: true, product: productWithId });
 }, 700));
@@ -944,7 +1048,8 @@ const deleteProduct = (productId) => new Promise((resolve, reject) => setTimeout
     if (mockProducts.length < initialLength) {
         resolve({ success: true, message: 'Product deleted successfully.' });
     } else {
-        reject({ success: false, message: 'Product not found.' });
+        // Reject with an Error object
+        reject(new Error('Product not found.'));
     }
 }, 500));
 
@@ -956,7 +1061,8 @@ const updateOrder = (updatedOrder) => new Promise((resolve, reject) => setTimeou
         mockOrders[index] = { ...mockOrders[index], ...updatedOrder };
         resolve({ success: true, order: mockOrders[index] });
     } else {
-        reject({ success: false, message: 'Order not found' });
+        // Reject with an Error object
+        reject(new Error('Order not found'));
     }
 }, 500));
 
@@ -1076,7 +1182,7 @@ function EditSellerModal({ seller, onClose, onSave }) {
           />
           {currentSeller.imageUrl && (
             <div className="image-preview-container">
-              <img src={currentSeller.imageUrl} alt="Seller Preview" />
+              <img src={currentSeller.imageUrl} alt="Seller Profile Preview" />
             </div>
           )}
 
@@ -1103,6 +1209,369 @@ EditSellerModal.propTypes = {
     onSave: PropTypes.func.isRequired,
 };
 
+// NEW: Add Product Modal - Enhanced with ProductDetails fields and Drag & Drop
+function AddProductModal({ onClose, onAddProduct }) {
+    const fileInputRef = useRef(null);
+    const [product, setProduct] = useState({
+        name: '',
+        category: '',
+        description: '',
+        stock: '', // Corresponds to 'amount'
+        price: '',
+        originalPrice: '', // New field, could default to price or be separate
+        cost: '', // New field, could default to price or be separate
+        delivery: '', // Corresponds to 'delivery'
+        imageUrls: [], // This will store Cloudinary URLs
+    });
+
+    const [selectedFiles, setSelectedFiles] = useState([]); // Stores File objects for new uploads
+    const [previewImages, setPreviewImages] = useState([]); // Stores blob URLs for local preview
+    const [uploadingImages, setUploadingImages] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [isDragging, setIsDragging] = useState(false); // State for drag and drop visual feedback
+
+    const requiredFields = ["name", "category", "description", "stock", "price"];
+
+    // Use useCallback to memoize this function, preventing unnecessary re-renders
+    const checkFormValidity = useCallback(() => {
+        const filled = requiredFields.every((field) => String(product[field]).trim() !== "");
+        return filled && (selectedFiles.length > 0 || product.imageUrls.length > 0);
+    }, [product, selectedFiles.length, product.imageUrls.length]);
+
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setProduct(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleFiles = (files) => {
+        const newFiles = Array.from(files);
+        const totalImages = selectedFiles.length + product.imageUrls.length + newFiles.length;
+
+        if (totalImages > 4) {
+            setError(`You can upload a maximum of 4 images. You are trying to add ${totalImages - (selectedFiles.length + product.imageUrls.length)} more.`);
+            return;
+        }
+
+        setSelectedFiles(prev => [...prev, ...newFiles]);
+
+        const newPreviews = newFiles.map(file => ({
+            id: URL.createObjectURL(file),
+            src: URL.createObjectURL(file)
+        }));
+        setPreviewImages(prev => [...prev, ...newPreviews]);
+        setError(null);
+    };
+
+    const handleFileChange = (e) => {
+        handleFiles(e.target.files);
+    };
+
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e) => {
+        e.preventDefault();
+        setIsDragging(false);
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        setIsDragging(false);
+        handleFiles(e.dataTransfer.files);
+    };
+
+    const removeNewImage = (idToRemove) => {
+        const indexToRemove = previewImages.findIndex(p => p.id === idToRemove);
+        if (indexToRemove !== -1) {
+            URL.revokeObjectURL(previewImages[indexToRemove].src);
+            setSelectedFiles(prev => prev.filter((_, index) => index !== indexToRemove));
+            setPreviewImages(prev => prev.filter(p => p.id !== idToRemove));
+        }
+    };
+
+    const removeUploadedImage = (urlToRemove) => {
+        setProduct(prev => ({
+            ...prev,
+            imageUrls: prev.imageUrls.filter(url => url !== urlToRemove)
+        }));
+    };
+
+    const uploadImagesToCloudinary = async () => {
+        if (selectedFiles.length === 0) return [];
+
+        setUploadingImages(true);
+        setError(null);
+        const uploadedUrls = [];
+
+        try {
+            for (const file of selectedFiles) {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+                const response = await axios.post(CLOUDINARY_UPLOAD_URL, formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+
+                if (response.data && response.data.secure_url) {
+                    uploadedUrls.push(response.data.secure_url);
+                } else {
+                    throw new Error("Cloudinary upload failed for a file.");
+                }
+            }
+            return uploadedUrls;
+        } catch (err) {
+            console.error("Cloudinary upload error:", err);
+            setError("Failed to upload images to Cloudinary. Please try again.");
+            return [];
+        } finally {
+            setUploadingImages(false);
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+
+        if (!checkFormValidity()) {
+            setError("Please fill in all required fields and upload at least one image.");
+            setLoading(false);
+            return;
+        }
+
+        let finalImageUrls = [...product.imageUrls];
+
+        if (selectedFiles.length > 0) {
+            const newUploadedUrls = await uploadImagesToCloudinary();
+            if (newUploadedUrls.length === 0 && selectedFiles.length > 0) {
+                setLoading(false);
+                return;
+            }
+            finalImageUrls = [...finalImageUrls, ...newUploadedUrls];
+        }
+
+        if (finalImageUrls.length === 0) {
+            setError("No images could be uploaded or selected for the product. Please check your image files.");
+            setLoading(false);
+            return;
+        }
+
+        try {
+            const productToSave = {
+                ...product,
+                originalPrice: parseFloat(product.originalPrice) || parseFloat(product.price) || 0, // Default if not provided
+                price: parseFloat(product.price) || 0,
+                cost: parseFloat(product.cost) || parseFloat(product.price) * 0.5 || 0, // Default to 50% of price
+                stock: parseInt(product.stock, 10) || 0,
+                sales: 0,
+                rating: 0,
+                imageUrl: finalImageUrls[0], // Set the first image as the main imageUrl
+                imageUrls: finalImageUrls,
+            };
+
+            const response = await addProduct(productToSave); // Call your mock API
+            if (response.success) {
+                alert('Product added successfully!');
+                onAddProduct();
+                onClose();
+            } else {
+                setError(response.message || "Failed to add product.");
+            }
+        } catch (err) {
+            setError("An error occurred while adding the product.");
+            console.error("Error adding product:", err);
+        } finally {
+            setLoading(false);
+            previewImages.forEach(p => URL.revokeObjectURL(p.src));
+        }
+    };
+
+    // Derived state for button disabled status
+    const isAddBtnDisabled = !checkFormValidity() || loading || uploadingImages;
+
+    return (
+        <div className="modal-overlay">
+            <div className="modal-content">
+                <button className="close-button" onClick={onClose}>&times;</button>
+                <h2>Add New Product</h2>
+                {error && <p className="form-error">{error}</p>}
+                <form onSubmit={handleSubmit}>
+                    <label htmlFor="name">Product Name:</label>
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        value={product.name}
+                        onChange={handleChange}
+                        required
+                    />
+
+                    <label htmlFor="category">Category:</label>
+                    <select
+                        id="category"
+                        name="category"
+                        value={product.category}
+                        onChange={handleChange}
+                        required
+                    >
+                        <option value="">-- Select Category --</option>
+                        <option value="fashion">Fashion</option>
+                        <option value="electronic">Electronic</option>
+                        <option value="furniture">Furniture</option>
+                        <option value="kitchen">Kitchen</option>
+                        <option value="toys">Toys</option>
+                        <option value="cosmetic">Cosmetic</option>
+                        <option value="food">Food</option>
+                        <option value="sports">Sports</option>
+                        <option value="appliances">Appliances</option>
+                    </select>
+
+                    <label htmlFor="description">Description:</label>
+                    <textarea
+                        id="description"
+                        name="description"
+                        value={product.description}
+                        onChange={handleChange}
+                        required
+                    />
+
+                    <label htmlFor="stock">Stock Quantity (Amount):</label>
+                    <input
+                        type="number"
+                        id="stock"
+                        name="stock"
+                        value={product.stock}
+                        onChange={handleChange}
+                        min="1"
+                        step="1"
+                        required
+                    />
+
+                    <label htmlFor="price">Selling Price (₹):</label>
+                    <input
+                        type="number"
+                        id="price"
+                        name="price"
+                        value={product.price}
+                        onChange={handleChange}
+                        min="0"
+                        step="0.01"
+                        required
+                    />
+
+                    <label htmlFor="originalPrice">Original Price (₹) (Optional):</label>
+                    <input
+                        type="number"
+                        id="originalPrice"
+                        name="originalPrice"
+                        value={product.originalPrice}
+                        onChange={handleChange}
+                        min="0"
+                        step="0.01"
+                    />
+
+                    <label htmlFor="cost">Cost Price (₹) (Optional):</label>
+                    <input
+                        type="number"
+                        id="cost"
+                        name="cost"
+                        value={product.cost}
+                        onChange={handleChange}
+                        min="0"
+                        step="0.01"
+                    />
+
+                    <label htmlFor="delivery">Delivery Charge/Type:</label>
+                    <input
+                        type="text"
+                        id="delivery"
+                        name="delivery"
+                        value={product.delivery}
+                        onChange={handleChange}
+                    />
+
+                    {/* Image Upload Section - Semantic and Accessible */}
+                    <label htmlFor="imageInput">Product Images (Max 4 images):</label>
+                    <button
+                        type="button"
+                        className={`modal-image-upload-area ${isDragging ? 'dragging' : ''}`}
+                        onClick={() => fileInputRef.current?.click()}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                        disabled={product.imageUrls.length + selectedFiles.length >= 4 || uploadingImages || loading}
+                    >
+                        <FaUpload className="upload-icon" />
+                        <p>Drag & Drop images here, or Click to Select</p>
+                        <p>(Max 4 images)</p>
+                        <input
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            onChange={handleFileChange}
+                            ref={fileInputRef}
+                            id="imageInput"
+                            style={{ display: 'none' }}
+                            disabled={product.imageUrls.length + selectedFiles.length >= 4 || uploadingImages || loading}
+                        />
+                    </button>
+
+
+                    {(product.imageUrls.length > 0 || previewImages.length > 0) && (
+                        <div className="modal-image-preview-grid">
+                            {product.imageUrls.map((src, index) => (
+                                <div key={src} className="modal-image-preview-item">
+                                    <img src={src} alt={`Product Image ${index + 1}`} />
+                                    <button
+                                        type="button"
+                                        className="remove-image-btn"
+                                        onClick={(e) => { e.stopPropagation(); removeUploadedImage(src); }}
+                                    >
+                                        <FaTimes />
+                                    </button>
+                                </div>
+                            ))}
+                            {previewImages.map((p, index) => (
+                                <div key={p.id} className="modal-image-preview-item">
+                                    <img src={p.src} alt={`Product Image ${index + 1}`} />
+                                    <button
+                                        type="button"
+                                        className="remove-image-btn"
+                                        onClick={(e) => { e.stopPropagation(); removeNewImage(p.id); }}
+                                    >
+                                        <FaTimes />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+
+                    <div className="modal-buttons">
+                        <button type="button" className="cancel-button" onClick={onClose} disabled={loading || uploadingImages}>
+                            Cancel
+                        </button>
+                        <button type="submit" className="submit-button" disabled={isAddBtnDisabled}>
+                            {(loading || uploadingImages) ? 'Adding Product...' : 'Add Product'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
+AddProductModal.propTypes = {
+    onClose: PropTypes.func.isRequired,
+    onAddProduct: PropTypes.func.isRequired,
+};
+
 
 function ViewProductModal({ product, onClose }) {
     return (
@@ -1111,19 +1580,31 @@ function ViewProductModal({ product, onClose }) {
                 <button className="close-button" onClick={onClose}>&times;</button>
                 <h2>Product Details</h2>
                 <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                    <img src={product.imageUrl} alt={product.name} style={{ maxWidth: '150px', maxHeight: '150px', borderRadius: '8px', objectFit: 'cover' }} />
+                    {/* Display multiple images if available, otherwise fallback to main imageUrl */}
+                    {product.imageUrls && product.imageUrls.length > 0 ? (
+                        <div className="modal-image-preview-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))' }}>
+                            {product.imageUrls.map((imgUrl, index) => (
+                                <div key={imgUrl} className="modal-image-preview-item" style={{ width: '100px', height: '100px' }}>
+                                    <img src={imgUrl} alt={`${product.name} image ${index + 1}`} />
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <img src={product.imageUrl} alt={product.name} style={{ maxWidth: '150px', maxHeight: '150px', borderRadius: '8px', objectFit: 'cover' }} />
+                    )}
                 </div>
                 <p><strong>Name:</strong> {product.name}</p>
                 <p><strong>Description:</strong> {product.description}</p>
                 <p><strong>Category:</strong> {product.category}</p>
                 <p><strong>Sub Category:</strong> {product.subCategory}</p>
                 <p><strong>Third Level Sub Category:</strong> {product.thirdLevelSubCategory || 'N/A'}</p>
-                <p><strong>Original Price:</strong> ₹{product.originalPrice.toFixed(2)}</p>
+                <p><strong>Original Price:</strong> ₹{product.originalPrice ? product.originalPrice.toFixed(2) : 'N/A'}</p>
                 <p><strong>Selling Price:</strong> ₹{product.price.toFixed(2)}</p>
-                <p><strong>Cost:</strong> ₹{product.cost.toFixed(2)}</p>
+                <p><strong>Cost:</strong> ₹{product.cost ? product.cost.toFixed(2) : 'N/A'}</p>
                 <p><strong>Stock:</strong> {product.stock}</p>
                 <p><strong>Sales:</strong> {product.sales}</p>
                 <p><strong>Rating:</strong> {product.rating} ★</p>
+                <p><strong>Delivery:</strong> {product.delivery || 'N/A'}</p>
                 <div className="modal-buttons">
                     <button type="button" className="cancel-button" onClick={onClose}>
                         Close
@@ -1139,15 +1620,17 @@ ViewProductModal.propTypes = {
         name: PropTypes.string.isRequired,
         description: PropTypes.string.isRequired,
         category: PropTypes.string.isRequired,
-        subCategory: PropTypes.string.isRequired,
+        subCategory: PropTypes.string, // Made optional as per updated mock
         thirdLevelSubCategory: PropTypes.string,
         imageUrl: PropTypes.string.isRequired,
-        originalPrice: PropTypes.number.isRequired,
+        imageUrls: PropTypes.arrayOf(PropTypes.string),
+        originalPrice: PropTypes.number, // Can be optional now
         price: PropTypes.number.isRequired,
-        cost: PropTypes.number.isRequired,
+        cost: PropTypes.number, // Can be optional now
         stock: PropTypes.number.isRequired,
         sales: PropTypes.number.isRequired,
         rating: PropTypes.number.isRequired,
+        delivery: PropTypes.string,
     }).isRequired,
     onClose: PropTypes.func.isRequired,
 };
@@ -1372,7 +1855,8 @@ function ProductList({ refreshKey, onDeleteProduct, onViewProduct }) {
                         <tr key={product.id}>
                             <td><input type="checkbox" /></td>
                             <td className="product-cell">
-                                <img src={product.imageUrl} alt={product.name} />
+                                {/* Use the first imageUrl for display in the list */}
+                                <img src={product.imageUrls[0] || product.imageUrl} alt={product.name} />
                                 <div>
                                     <div>{product.name}</div>
                                     <div style={{ fontSize: '0.8em', color: '#777' }}>{product.description}</div>
@@ -1381,7 +1865,7 @@ function ProductList({ refreshKey, onDeleteProduct, onViewProduct }) {
                             <td>{product.category}</td>
                             <td>{product.subCategory}</td>
                             <td>
-                                <span className="product-price-old">₹{product.originalPrice.toFixed(2)}</span>
+                                <span className="product-price-old">₹{product.originalPrice ? product.originalPrice.toFixed(2) : product.price.toFixed(2)}</span>
                                 <span className="product-price-new">₹{product.price.toFixed(2)}</span>
                             </td>
                             <td className="product-sales">{product.sales} sales</td>
@@ -1484,20 +1968,6 @@ function SalesAnalytics({ refreshKey }) {
         font: {
             size: 16,
             weight: 'bold'
-        }
-      },
-      tooltip: {
-        backgroundColor: '#070A52',
-        titleColor: '#FFCC00',
-        bodyColor: 'white',
-        borderColor: '#FFCC00',
-        borderWidth: 1,
-        cornerRadius: 5,
-        displayColors: false,
-        callbacks: {
-            label: function(context) {
-                return `Sales: ₹${context.parsed.y.toFixed(2)}`;
-            }
         }
       }
     },
@@ -1683,10 +2153,8 @@ RecentOrders.propTypes = {
 
 // --- Main Seller Dashboard Page Component ---
 export default function SellerDashboard() {
-  const navigate = useNavigate(); // Initialize useNavigate hook
-
   const [sellerData, setSellerData] = useState({ name: "Loading...", email: "", imageUrl: "https://placehold.co/80x80/070A52/FFCC00?text=RV" });
-  const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false); // This will no longer open a modal
+  const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
   const [isEditSellerModalOpen, setIsEditSellerModalOpen] = useState(false);
   const [isViewProductModalOpen, setIsViewProductModalOpen] = useState(false);
   const [productToView, setProductToView] = useState(null);
@@ -1710,13 +2178,14 @@ export default function SellerDashboard() {
     fetchSellerDetails();
   }, []);
 
-  // Changed to navigate to AddProductPage
   const handleAddProductClick = () => {
-      navigate('/productdetails');
+      setIsAddProductModalOpen(true);
   };
-  // closeAddProductModal is no longer needed but kept for reference
-  const closeAddProductModal = () => setIsAddProductModalOpen(false);
 
+  const closeAddProductModal = () => {
+      setIsAddProductModalOpen(false);
+      handleDataChange();
+  };
 
   const handleEditSellerClick = () => setIsEditSellerModalOpen(true);
   const closeEditSellerModal = () => {
@@ -1746,8 +2215,8 @@ export default function SellerDashboard() {
               alert('Product deleted successfully!');
               handleDataChange();
           } catch (error) {
-              console.error("Error deleting product:", error);
-              alert('Failed to delete product.');
+              console.error("Error deleting product:", error.message);
+              alert('Failed to delete product: ' + error.message);
           } finally {
               setProductIdToDelete(null);
           }
@@ -1779,33 +2248,29 @@ export default function SellerDashboard() {
 
   return (
     <div className="seller-dashboard">
-      {/* Welcome Banner now includes seller info and edit button */}
       <WelcomeBanner
         sellerInfo={sellerData}
-        onAddProductClick={handleAddProductClick} // This now navigates
+        onAddProductClick={handleAddProductClick}
         onEditSellerClick={handleEditSellerClick}
       />
 
       <main className="dashboard-content">
-        {/* Order Status Card */}
         <OrderStatus key={`orders-summary-${refreshKey}`} />
-        {/* Product List (now a table with delete/view actions) */}
         <ProductList
             key={`products-${refreshKey}`}
             onDeleteProduct={handleDeleteProductClick}
             onViewProduct={handleViewProduct}
         />
-        {/* Recent Orders Table */}
         <RecentOrders
             key={`recent-orders-${refreshKey}`}
             onEditOrderStatus={handleEditOrderStatusClick}
         />
-        {/* Sales Analytics and Monthly Sales Trend (moved to end and larger) */}
         <SalesAnalytics key={`sales-${refreshKey}`} />
       </main>
 
-      {/* Modals rendered conditionally */}
-      {/* AddProductModal is no longer rendered here */}
+      {isAddProductModalOpen && (
+        <AddProductModal onClose={closeAddProductModal} onAddProduct={handleDataChange} />
+      )}
 
       {isEditSellerModalOpen && (
         <EditSellerModal seller={sellerData} onClose={closeEditSellerModal} onSave={setSellerData} />
