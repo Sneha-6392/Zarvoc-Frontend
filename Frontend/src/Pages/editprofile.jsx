@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { HashLoader } from "react-spinners";
+import { HashLoader } from "react-spinners"; // Import HashLoader
+import Navbar from "../Components/Navbar";
+import Footer from "../Components/Footer";
 
 export default function EditProfile() {
   const navigate = useNavigate();
@@ -87,6 +89,8 @@ export default function EditProfile() {
   }
 
   return (
+    <>
+    <Navbar />
     <div className="min-h-screen bg-gradient-to-r from-blue-50 to-blue-100 flex items-center justify-center px-4 py-10">
       <div className="bg-white shadow-2xl rounded-2xl w-full max-w-3xl p-8">
         <h2 className="text-3xl font-bold text-center text-blue-700 mb-8">
@@ -177,6 +181,8 @@ export default function EditProfile() {
         </div>
       </div>
     </div>
+    <Footer />
+    </>
   );
 }
 
