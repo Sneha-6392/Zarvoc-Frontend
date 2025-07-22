@@ -6,7 +6,7 @@ import 'swiper/css/pagination';
 import '../Styles/swiper-custom.css';
 
 const slides = [
-  'https://cmsimages.shoppersstop.com/EOSS_preview_sale_web_7ffc245564/EOSS_preview_sale_web_7ffc245564.png',
+  'https://assets.myntassets.com/f_webp,w_980,c_limit,fl_progressive,dpr_2.0/assets/images/2025/7/22/7f390c5f-bfe9-4a88-a520-5db4588cf72e1753185543502-Menspage.png',
   'https://cmsimages.shoppersstop.com/Fragrance_Affair_KV_30th_May_25_web_2119c126b7/Fragrance_Affair_KV_30th_May_25_web_2119c126b7.jpg',
   'https://cmsimages.shoppersstop.com/Entry_Banner_web_90704e9cc4/Entry_Banner_web_90704e9cc4.png',
   'https://cmsimages.shoppersstop.com/Mac_Web_6e9bc3db68/Mac_Web_6e9bc3db68.jpg',
@@ -34,7 +34,7 @@ const PromoSlider = () => {
         {slides.map((src, i) => (
           <SwiperSlide key={i} className="flex justify-center items-center">
             {/* Reduced height from 500px to 300px */}
-            <div className="relative w-full h-[300px] flex justify-center items-center overflow-hidden">
+            <div className="relative w-full h-[400px] flex justify-center items-center overflow-hidden">
               <img
                 src={src}
                 alt={`Slide ${i + 1}`}
