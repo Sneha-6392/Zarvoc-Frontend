@@ -27,6 +27,7 @@ import Ai from './Components/Ai.jsx';
 import HelpCenter from './Pages/HelpCenter.jsx';
 import Signup from './Pages/Signup.jsx';
 import Category from './Pages/Category.jsx';
+import OrderConfirmed from './Pages/OrderConfirmed.jsx';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -63,7 +64,8 @@ function App() {
           <Route path="/helpcenter" element={<HelpCenter />} />
           <Route path="/register" element={<Signup />} />
           <Route path="/category" element={<Category />} />
-          
+          <Route path="/orderconfirmed" element={<OrderConfirmed />} />
+
           {/* Add more routes as needed */}
           
           {/* Fallback route */}
