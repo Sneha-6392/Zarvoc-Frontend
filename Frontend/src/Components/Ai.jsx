@@ -139,6 +139,11 @@ function Ai() {
       navigate("/helpcenter")
       setShowSearch(false) 
     }
+    else if(transcript.includes("") || transcript.includes("support")){
+      speak("opening registration Center")
+      navigate("/register")
+      setShowSearch(false) 
+    }
     else {
       toast.error("I didn't understand that. Please try again.")
     }

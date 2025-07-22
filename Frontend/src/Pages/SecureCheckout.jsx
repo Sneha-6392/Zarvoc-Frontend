@@ -1,4 +1,3 @@
-// SecureCheckout.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HashLoader } from 'react-spinners';
@@ -14,9 +13,16 @@ const SecureCheckout = () => {
   const [loading, setLoading] = useState(true);
   const [discount, setDiscount] = useState(0);
   const [instructions, setInstructions] = useState('');
-  const [address, setAddress] = useState('');
-  const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [subtotal, setSubtotal] = useState(0);
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
+  const [userInfo, setUserInfo] = useState({
+    name: '',
+    mobile: '',
+    address: '',
+    city: '',
+    pincode: '',
+    state: ''
+  });
 
   const isCouponValid = couponCode.trim() !== '';
   const isUpiValid = upiId.trim() !== '';
@@ -70,7 +76,6 @@ const SecureCheckout = () => {
 
     try {
       const totalAmount = Math.round((subtotal + 50 - discount) * 100);
-
       const res = await fetch('http://localhost:3000/api/razorpay/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -88,7 +93,7 @@ const SecureCheckout = () => {
         order_id: data.id,
         handler: function (response) {
           alert('✅ Payment successful!');
-          navigate('/track-order');
+          navigate('/orderconfirmed');
         },
         prefill: {
           name: 'Customer Name',
@@ -129,19 +134,71 @@ const SecureCheckout = () => {
 
         <main className="max-w-6xl mx-auto p-4 grid md:grid-cols-3 gap-4">
           <section className="md:col-span-2 space-y-4">
+            {/* Address Section */}
             <div className="bg-white p-4 rounded shadow">
               <div className="flex justify-between">
                 <div className="w-full">
                   <h2 className="font-semibold text-[#070A52]">Delivering to you</h2>
                   {isEditingAddress ? (
-                    <textarea
-                      className="w-full border mt-1 p-2 text-sm rounded"
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                    />
+                    <div className="space-y-2 text-sm">
+                      <input
+                        type="text"
+                        placeholder="Full Name"
+                        className="w-full border p-2 rounded"
+                        value={userInfo.name}
+                        onChange={(e) => setUserInfo({ ...userInfo, name: e.target.value })}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Mobile Number"
+                        className="w-full border p-2 rounded"
+                        value={userInfo.mobile}
+                        onChange={(e) => setUserInfo({ ...userInfo, mobile: e.target.value })}
+                      />
+                      <textarea
+                        placeholder="Address"
+                        className="w-full border p-2 rounded"
+                        value={userInfo.address}
+                        onChange={(e) => setUserInfo({ ...userInfo, address: e.target.value })}
+                      />
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="City"
+                          className="w-full border p-2 rounded"
+                          value={userInfo.city}
+                          onChange={(e) => setUserInfo({ ...userInfo, city: e.target.value })}
+                        />
+                        <input
+                          type="text"
+                          placeholder="Pincode"
+                          className="w-full border p-2 rounded"
+                          value={userInfo.pincode}
+                          onChange={(e) => setUserInfo({ ...userInfo, pincode: e.target.value })}
+                        />
+                        <input
+                          type="text"
+                          placeholder="State"
+                          className="w-full border p-2 rounded"
+                          value={userInfo.state}
+                          onChange={(e) => setUserInfo({ ...userInfo, state: e.target.value })}
+                        />
+                      </div>
+                    </div>
                   ) : (
-                    <p className="text-sm">{address || 'No address saved.'}</p>
+                    <div className="text-sm leading-relaxed">
+                      {userInfo.name ? (
+                        <>
+                          <p><strong>{userInfo.name}</strong> ({userInfo.mobile})</p>
+                          <p>{userInfo.address}</p>
+                          <p>{userInfo.city}, {userInfo.state} - {userInfo.pincode}</p>
+                        </>
+                      ) : (
+                        <p>No address saved.</p>
+                      )}
+                    </div>
                   )}
+
                   <a
                     href="#"
                     className="text-sm text-blue-600 hover:underline block mt-1"
@@ -157,7 +214,18 @@ const SecureCheckout = () => {
                   />
                 </div>
                 <button
-                  onClick={() => setIsEditingAddress(!isEditingAddress)}
+                  onClick={() => {
+                    if (isEditingAddress) {
+                      const { name, mobile, address, city, pincode, state } = userInfo;
+                      if (name && mobile && address && city && pincode && state) {
+                        setIsEditingAddress(false);
+                      } else {
+                        alert('Please fill in all fields.');
+                      }
+                    } else {
+                      setIsEditingAddress(true);
+                    }
+                  }}
                   className="text-sm font-semibold text-[#070A52] hover:underline ml-2"
                 >
                   {isEditingAddress ? 'Save' : 'Edit'}
@@ -165,6 +233,7 @@ const SecureCheckout = () => {
               </div>
             </div>
 
+            {/* Payment Section */}
             <div className="bg-white p-4 rounded shadow">
               <h2 className="font-semibold text-[#070A52] mb-4">Payment Method</h2>
               <div className="mb-4">
@@ -281,6 +350,7 @@ const SecureCheckout = () => {
             </div>
           </section>
 
+          {/* Order Summary */}
           <aside className="bg-white p-4 rounded shadow h-fit">
             <button
               className={`w-full py-2 rounded text-sm mb-4 transition-all duration-200 ${
