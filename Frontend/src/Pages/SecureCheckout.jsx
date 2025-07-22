@@ -64,7 +64,7 @@ const SecureCheckout = () => {
   const handleRazorpayPayment = async () => {
     if (selectedPayment === 'cod') {
       alert('✅ Cash on Delivery selected!');
-      navigate('/track-order');
+      navigate('/orderconfirmed');
       return;
     }
 

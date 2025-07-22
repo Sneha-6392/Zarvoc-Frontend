@@ -1,38 +1,39 @@
-import React, { useEffect, useState } from 'react';
-import { HashLoader } from 'react-spinners'; // Import HashLoader
-import Navbar from '../Components/Navbar';
-import Footer from '../Components/Footer';
-// import logo from '../assets/Zarvoc2.png'; // No longer needed, as discussed previously
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { HashLoader } from "react-spinners";
+import Navbar from "../Components/Navbar";
+import Footer from "../Components/Footer";
 
 const Dashboard = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate(); // Initialize navigate
 
   useEffect(() => {
-    fetch('http://localhost:3000/products')
-      .then(res => res.json())
-      .then(data => {
+    fetch("http://localhost:3000/products")
+      .then((res) => res.json())
+      .then((data) => {
         setProducts(data);
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(err);
         setLoading(false);
       });
   }, []);
 
   const handleDelete = (id) => {
-    if (window.confirm('🗑 Are you sure you want to delete this product?')) {
+    if (window.confirm("🗑 Are you sure you want to delete this product?")) {
       fetch(`http://localhost:3000/products/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       })
-        .then(res => res.json())
+        .then((res) => res.json())
         .then(() => {
-          alert('✅ Product deleted successfully!');
-          setProducts(prev => prev.filter(product => product._id !== id));
+          alert("✅ Product deleted successfully!");
+          setProducts((prev) => prev.filter((product) => product._id !== id));
         })
-        .catch(err => {
-          alert('❌ Failed to delete product');
+        .catch((err) => {
+          alert("❌ Failed to delete product");
           console.error(err);
         });
     }
@@ -41,7 +42,6 @@ const Dashboard = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-br from-gray-100 to-gray-300">
-        {/* HashLoader component with customizable color and size */}
         <HashLoader color="#070A52" size={80} />
       </div>
     );
@@ -50,14 +50,14 @@ const Dashboard = () => {
   return (
     <div
       className={`flex flex-col min-h-screen bg-gray-50 ${
-        products.length === 0 ? 'overflow-hidden' : 'overflow-y-auto'
+        products.length === 0 ? "overflow-hidden" : "overflow-y-auto"
       }`}
     >
       <Navbar />
       <main className="flex-1 px-4 py-8">
         <div className="max-w-4xl mx-auto w-full">
           {products.length > 0 ? (
-            products.map(product => (
+            products.map((product) => (
               <div
                 key={product._id}
                 className="flex flex-col md:flex-row items-start bg-white border border-gray-300 rounded-xl shadow-sm p-6 mb-6"
@@ -70,15 +70,21 @@ const Dashboard = () => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <span className="text-gray-500 font-medium">🚫 No Image</span>
+                    <span className="text-gray-500 font-medium">
+                      🚫 No Image
+                    </span>
                   )}
                 </div>
                 <div className="flex-1">
                   <p className="text-gray-800 font-semibold mb-2">
                     📝 {product.description}
                   </p>
-                  <p className="text-green-600 font-bold mb-1">💰 ₹{product.price}</p>
-                  <p className="text-gray-500 mb-2">📦 Amount: {product.amount}</p>
+                  <p className="text-green-600 font-bold mb-1">
+                    💰 ₹{product.price}
+                  </p>
+                  <p className="text-gray-500 mb-2">
+                    📦 Amount: {product.amount}
+                  </p>
                   <div className="flex gap-3 mt-2">
                     <button
                       onClick={() => handleDelete(product._id)}
@@ -100,8 +106,8 @@ const Dashboard = () => {
           )}
 
           <button
-            className="w-full bg-gray-300 text-white text-lg font-semibold py-3 rounded-md opacity-70 cursor-not-allowed mt-4"
-            disabled
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold py-3 rounded-md mt-4"
+            onClick={() => navigate("/productdetails")} // Navigate here
           >
             ➕ Add more item
           </button>
