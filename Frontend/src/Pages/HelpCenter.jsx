@@ -7,7 +7,6 @@ import { HashLoader } from 'react-spinners';
 
 function HelpCenter() {
   const [isTawkApiLoaded, setIsTawkApiLoaded] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,10 +25,6 @@ function HelpCenter() {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleSearch = (event) => {
-    setSearchQuery(event.target.value.toLowerCase());
-  };
-
   const startLiveChat = () => {
     if (isTawkApiLoaded && window.Tawk_API) {
       window.Tawk_API.showWidget();
@@ -45,45 +40,8 @@ function HelpCenter() {
     const recipient = 'arpanjain00123@gmail.com';
     const bodyText = encodeURIComponent('Hi, I am visiting from your UrbanTalesian website.');
     const gmailComposeUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${recipient}&body=${bodyText}`;
-    
+
     window.open(gmailComposeUrl, '_blank');
-  };
-
-  const filterFaqs = (faqs) => {
-    if (!searchQuery) {
-      return faqs;
-    }
-    return faqs.filter(faq => 
-      faq.question.toLowerCase().includes(searchQuery) || 
-      faq.answer.toLowerCase().includes(searchQuery)
-    );
-  };
-
-  const faqData = {
-    orderingPayments: [
-      { question: "How do I place an order?", answer: "To place an order, simply browse our categories, add desired items to your cart, and proceed to checkout. Follow the on-screen prompts to enter your shipping details and payment information." },
-      { question: "What payment methods do you accept?", answer: "We accept major credit/debit cards (Visa, MasterCard, RuPay), Net Banking, UPI, and select digital wallets. All transactions are secure and encrypted." },
-      { question: "Can I change or cancel my order?", answer: "Orders can be changed or canceled only if they haven't been processed for shipping. Please contact our support team immediately via live chat or email with your order number." },
-      { question: "Is my payment information secure?", answer: "Absolutely. We use industry-standard SSL encryption and secure payment gateways to protect your personal and financial data. Your security is our top priority." },
-    ],
-    shippingDelivery: [
-      { question: "What are your shipping options and costs?", answer: "We offer standard and express shipping options across India. Shipping costs vary based on your location and chosen delivery speed, which will be calculated at checkout." },
-      { question: "How long will my order take to arrive?", answer: "Standard delivery usually takes 3-7 business days, while express delivery takes 1-3 business days, depending on your location." },
-      { question: "How can I track my order?", answer: "Once your order is dispatched, you'll receive a tracking number via email and SMS. You can track your order status directly on our Track Order page." },
-      { question: "Do you ship internationally?", answer: "Currently, we only ship within India. We hope to expand our shipping destinations soon!" },
-    ],
-    returnsRefunds: [
-      { question: "What is your return policy?", answer: "We offer a 7-day return policy for most items, starting from the date of delivery. Items must be unused, in original packaging, and with all tags intact. Some exclusions may apply." },
-      { question: "How do I return an item?", answer: "To initiate a return, log in to your account, go to 'My Orders,' select the item you wish to return, and follow the instructions. You can also contact our support team for assistance." },
-      { question: "When will I receive my refund?", answer: "Once your returned item is received and inspected, refunds are typically processed within 5-7 business days to your original payment method." },
-      { question: "What if my item is damaged or incorrect?", answer: "If you receive a damaged or incorrect item, please contact us immediately (within 24 hours of delivery) with photos of the product and packaging. We'll arrange for a replacement or full refund." },
-    ],
-    accountManagement: [
-      { question: "How do I create an account?", answer: "Click on the 'Login/Sign Up' icon at the top right corner of our website and follow the simple steps to register." },
-      { question: "How do I reset my password?", answer: "On the login page, click 'Forgot Password?' and enter your registered email address. We'll send you a link to reset your password." },
-      { question: "How can I update my profile information?", answer: "Log in to your account, navigate to 'My Profile', and you can edit your personal details, shipping addresses, and communication preferences there." },
-      { question: "What are the benefits of having an account?", answer: "An account allows for faster checkout, order tracking, viewing order history, managing wishlists, and receiving exclusive offers." },
-    ],
   };
 
   if (loading) {
@@ -102,136 +60,62 @@ function HelpCenter() {
           <header className="text-center mb-12 pt-8">
             <h1 className="text-5xl font-extrabold text-gray-900 leading-tight">UrbanTales Help Center</h1>
             <p className="text-xl text-gray-700 mt-4 max-w-2xl mx-auto">
-              Your guide to a seamless shopping experience. Find answers to common questions, explore our FAQs, or connect with our support team.
+              Your guide to a seamless shopping experience. Find answers to common questions or connect with our support team.
             </p>
           </header>
-
-          <hr className="my-10 border-gray-300" />
-
-          <section className="max-w-3xl mx-auto mb-16 p-6 bg-white rounded-xl shadow-lg">
-            <h2 className="text-3xl font-bold mb-5 text-gray-800 text-center">Search Our Knowledge Base</h2>
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search for questions (e.g., 'shipping,' 'returns,' 'password reset')"
-                className="w-full p-4 pl-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-200 transition duration-300 text-lg text-gray-700"
-                onChange={handleSearch}
-                value={searchQuery}
-              />
-              <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            </div>
-            {searchQuery && (
-              <p className="text-sm text-gray-500 mt-3 text-center">
-                Showing results for "{searchQuery}"
-              </p>
-            )}
-          </section>
 
           <hr className="my-10 border-gray-300" />
 
           <section className="max-w-5xl mx-auto mb-16">
             <h2 className="text-3xl font-bold mb-8 text-gray-800 text-center">Popular Topics</h2>
 
-            {filterFaqs(faqData.orderingPayments).length > 0 && (
-              <div className="bg-white p-8 rounded-xl shadow-lg mb-8 hover:shadow-xl transition duration-300">
-                <h3 className="text-2xl font-bold mb-6 text-gray-800 flex items-center">
-                  <span className="text-3xl mr-3">🛒</span> Ordering & Payments
-                </h3>
-                <ul className="space-y-6">
-                  {filterFaqs(faqData.orderingPayments).map((faq, index) => (
-                    <li key={index} className="border-b border-gray-200 pb-4 last:border-b-0 last:pb-0">
-                      <h4 className="font-semibold text-xl text-gray-900 mb-2">{faq.question}</h4>
-                      <p className="text-gray-700 leading-relaxed">{faq.answer}</p>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            <div className="bg-white p-8 rounded-xl shadow-lg mb-8">
+              <h3 className="text-2xl font-bold mb-6 text-gray-800 flex items-center">
+                <span className="text-3xl mr-3">🛒</span> Ordering & Payments
+              </h3>
+              <ul className="space-y-6">
+                <li><strong>How do I place an order?</strong><br />To place an order, simply browse our categories, add desired items to your cart, and proceed to checkout. Follow the on-screen prompts to enter your shipping details and payment information.</li>
+                <li><strong>What payment methods do you accept?</strong><br />We accept major credit/debit cards (Visa, MasterCard, RuPay), Net Banking, UPI, and select digital wallets. All transactions are secure and encrypted.</li>
+                <li><strong>Can I change or cancel my order?</strong><br />Orders can be changed or canceled only if they haven't been processed for shipping. Please contact our support team immediately via live chat or email with your order number.</li>
+                <li><strong>Is my payment information secure?</strong><br />Absolutely. We use industry-standard SSL encryption and secure payment gateways to protect your personal and financial data. Your security is our top priority.</li>
+              </ul>
+            </div>
 
-            {filterFaqs(faqData.shippingDelivery).length > 0 && (
-              <div className="bg-white p-8 rounded-xl shadow-lg mb-8 hover:shadow-xl transition duration-300">
-                <h3 className="text-2xl font-bold mb-6 text-gray-800 flex items-center">
-                  <span className="text-3xl mr-3">🚚</span> Shipping & Delivery
-                </h3>
-                <ul className="space-y-6">
-                  {filterFaqs(faqData.shippingDelivery).map((faq, index) => (
-                    <li key={index} className="border-b border-gray-200 pb-4 last:border-b-0 last:pb-0">
-                      <h4 className="font-semibold text-xl text-gray-900 mb-2">{faq.question}</h4>
-                      <p className="text-gray-700 leading-relaxed">
-                        {faq.answer.includes("Track Order") ? (
-                          <>
-                            {faq.answer.split('Track Order')[0]}
-                            <Link to="/trackorder" className="text-blue-600 hover:underline font-medium">Track Order</Link>
-                            {faq.answer.split('Track Order')[1]}
-                          </>
-                        ) : (
-                          faq.answer
-                        )}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            <div className="bg-white p-8 rounded-xl shadow-lg mb-8">
+              <h3 className="text-2xl font-bold mb-6 text-gray-800 flex items-center">
+                <span className="text-3xl mr-3">🚚</span> Shipping & Delivery
+              </h3>
+              <ul className="space-y-6">
+                <li><strong>What are your shipping options and costs?</strong><br />We offer standard and express shipping options across India. Shipping costs vary based on your location and chosen delivery speed, which will be calculated at checkout.</li>
+                <li><strong>How long will my order take to arrive?</strong><br />Standard delivery usually takes 3-7 business days, while express delivery takes 1-3 business days, depending on your location.</li>
+                <li><strong>How can I track my order?</strong><br />Once your order is dispatched, you'll receive a tracking number via email and SMS. You can track your order status directly on our <Link to="/trackorder" className="text-blue-600 hover:underline font-medium">Track Order</Link> page.</li>
+                <li><strong>Do you ship internationally?</strong><br />Currently, we only ship within India. We hope to expand our shipping destinations soon!</li>
+              </ul>
+            </div>
 
-            {filterFaqs(faqData.returnsRefunds).length > 0 && (
-              <div className="bg-white p-8 rounded-xl shadow-lg mb-8 hover:shadow-xl transition duration-300">
-                <h3 className="text-2xl font-bold mb-6 text-gray-800 flex items-center">
-                  <span className="text-3xl mr-3">↩️</span> Returns & Refunds
-                </h3>
-                <ul className="space-y-6">
-                  {filterFaqs(faqData.returnsRefunds).map((faq, index) => (
-                    <li key={index} className="border-b border-gray-200 pb-4 last:border-b-0 last:pb-0">
-                      <h4 className="font-semibold text-xl text-gray-900 mb-2">{faq.question}</h4>
-                      <p className="text-gray-700 leading-relaxed">{faq.answer}</p>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            <div className="bg-white p-8 rounded-xl shadow-lg mb-8">
+              <h3 className="text-2xl font-bold mb-6 text-gray-800 flex items-center">
+                <span className="text-3xl mr-3">↩️</span> Returns & Refunds
+              </h3>
+              <ul className="space-y-6">
+                <li><strong>What is your return policy?</strong><br />We offer a 7-day return policy for most items, starting from the date of delivery. Items must be unused, in original packaging, and with all tags intact. Some exclusions may apply.</li>
+                <li><strong>How do I return an item?</strong><br />To initiate a return, log in to your account, go to 'My Orders,' select the item you wish to return, and follow the instructions. You can also contact our support team for assistance.</li>
+                <li><strong>When will I receive my refund?</strong><br />Once your returned item is received and inspected, refunds are typically processed within 5-7 business days to your original payment method.</li>
+                <li><strong>What if my item is damaged or incorrect?</strong><br />If you receive a damaged or incorrect item, please contact us immediately (within 24 hours of delivery) with photos of the product and packaging. We'll arrange for a replacement or full refund.</li>
+              </ul>
+            </div>
 
-            {filterFaqs(faqData.accountManagement).length > 0 && (
-              <div className="bg-white p-8 rounded-xl shadow-lg mb-8 hover:shadow-xl transition duration-300">
-                <h3 className="text-2xl font-bold mb-6 text-gray-800 flex items-center">
-                  <span className="text-3xl mr-3">👤</span> Account Management
-                </h3>
-                <ul className="space-y-6">
-                  {filterFaqs(faqData.accountManagement).map((faq, index) => (
-                    <li key={index} className="border-b border-gray-200 pb-4 last:border-b-0 last:pb-0">
-                      <h4 className="font-semibold text-xl text-gray-900 mb-2">{faq.question}</h4>
-                      <p className="text-gray-700 leading-relaxed">
-                        {faq.answer.includes("Login/Sign Up") ? (
-                          <>
-                            {faq.answer.split('Login/Sign Up')[0]}
-                            <Link to="/login" className="text-blue-600 hover:underline font-medium">Login/Sign Up</Link>
-                            {faq.answer.split('Login/Sign Up')[1]}
-                          </>
-                        ) : faq.answer.includes("My Profile") ? (
-                          <>
-                            {faq.answer.split('My Profile')[0]}
-                            <Link to="/profile" className="text-blue-600 hover:underline font-medium">My Profile</Link>
-                            {faq.answer.split('My Profile')[1]}
-                          </>
-                        ) : (
-                          faq.answer
-                        )}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {!searchQuery || (
-              filterFaqs(faqData.orderingPayments).length === 0 &&
-              filterFaqs(faqData.shippingDelivery).length === 0 &&
-              filterFaqs(faqData.returnsRefunds).length === 0 &&
-              filterFaqs(faqData.accountManagement).length === 0
-            ) && searchQuery && (
-              <div className="text-center text-gray-600 text-xl p-8 bg-white rounded-xl shadow-lg">
-                <p>No results found for "{searchQuery}". Please try a different search term.</p>
-              </div>
-            )}
+            <div className="bg-white p-8 rounded-xl shadow-lg mb-8">
+              <h3 className="text-2xl font-bold mb-6 text-gray-800 flex items-center">
+                <span className="text-3xl mr-3">👤</span> Account Management
+              </h3>
+              <ul className="space-y-6">
+                <li><strong>How do I create an account?</strong><br />Click on the <Link to="/login" className="text-blue-600 hover:underline font-medium">Login/Sign Up</Link> icon at the top right corner of our website and follow the simple steps to register.</li>
+                <li><strong>How do I reset my password?</strong><br />On the login page, click 'Forgot Password?' and enter your registered email address. We'll send you a link to reset your password.</li>
+                <li><strong>How can I update my profile information?</strong><br />Log in to your account, navigate to <Link to="/profile" className="text-blue-600 hover:underline font-medium">My Profile</Link>, and you can edit your personal details, shipping addresses, and communication preferences there.</li>
+                <li><strong>What are the benefits of having an account?</strong><br />An account allows for faster checkout, order tracking, viewing order history, managing wishlists, and receiving exclusive offers.</li>
+              </ul>
+            </div>
           </section>
 
           <hr className="my-10 border-gray-300" />
