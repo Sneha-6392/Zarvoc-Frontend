@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Navbar from '../Components/Navbar';
-import { HashLoader } from "react-spinners";
+import Footer from '../Components/Footer';
+import { HashLoader } from 'react-spinners';
 
 const Category = () => {
   const [searchParams] = useSearchParams();
+  const category = searchParams.get('cat');
   const [products, setProducts] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  const category = searchParams.get('cat');
 
   useEffect(() => {
     if (!category) {
@@ -18,57 +18,48 @@ const Category = () => {
       return;
     }
 
-    console.log("Category:", category); // 👈 debug
-
-    setLoading(true);
-
     fetch(`http://localhost:3000/api/products/${category}`)
       .then((res) => res.json())
       .then((data) => {
-        console.log("Fetched products:", data); // 👈 debug
         setProducts(data);
         setError(null);
         setLoading(false);
       })
       .catch((err) => {
         console.error("Fetch error:", err);
-        setError('Failed to fetch products');
+        setError("Failed to fetch products");
         setLoading(false);
       });
   }, [category]);
 
   const addToCart = async (id, name, price, image) => {
-    const userId = localStorage.getItem('userId');
+    const userId = localStorage.getItem("userId");
     if (!userId) {
-      alert('You must be logged in to add items to cart.');
+      alert("You must be logged in to add items to cart.");
       return;
     }
 
     const item = { id, name, price, image, qty: 1 };
 
     try {
-      const res = await fetch('http://localhost:3000/api/cart/add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, item })
+      const res = await fetch("http://localhost:3000/api/cart/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, item }),
       });
 
       const data = await res.json();
-      if (res.ok) {
-        alert(data.msg || 'Added to cart!');
-      } else {
-        alert(data.msg || 'Failed to add to cart.');
-      }
+      alert(data.msg || (res.ok ? "Added to cart!" : "Failed to add to cart."));
     } catch (err) {
-      console.error('Error:', err);
-      alert('Server error');
+      console.error("Error:", err);
+      alert("Server error");
     }
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
-        <HashLoader color="#3182CE" size={80} />
+        <HashLoader color="#070A52" size={80} />
       </div>
     );
   }
@@ -80,37 +71,47 @@ const Category = () => {
   return (
     <>
       <Navbar />
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 p-6">
-        {products.length === 0 ? (
-          <p className="col-span-full text-center text-gray-500">No products found.</p>
-        ) : (
-          products.map((product) => (
-            <div
-              key={product._id}
-              className="bg-white rounded-xl shadow-md p-4 transition hover:shadow-xl hover:scale-[1.02] duration-300 border"
-            >
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-full h-48 object-cover rounded-lg mb-4"
-              />
-              <h3 className="text-lg font-semibold text-gray-800 mb-1">{product.name}</h3>
-              <p className="text-sm text-gray-500 mb-2 line-clamp-2">{product.description}</p>
-              <div className="flex justify-between items-center">
-                <span className="text-black-600 font-bold text-lg">₹{product.price}</span>
-                <button
-                  className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700 text-sm"
-                  onClick={() =>
-                    addToCart(product._id, product.name, product.price, product.image)
-                  }
-                >
-                  Add to Cart
-                </button>
+      <div className="p-6">
+        <h2 className="text-2xl font-bold mb-6 text-center capitalize">{category} Collection</h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          {products.length === 0 ? (
+            <p className="col-span-full text-center text-gray-500">No products found.</p>
+          ) : (
+            products.map((product) => (
+              <div
+                key={product._id}
+                className="bg-white rounded-xl shadow hover:shadow-lg overflow-hidden transition duration-300"
+              >
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="w-full h-90 object-cover"
+                />
+
+                <div className="p-4 space-y-1">
+                  <h3 className="font-semibold text-base text-gray-800">{product.name}</h3>
+                  <p className="text-sm text-gray-500 line-clamp-2">{product.description}</p>
+
+                  <div className="text-indigo-600 font-semibold text-lg mt-2">
+                    ₹{product.price}
+                  </div>
+
+                  <button
+                    className="w-full mt-3 bg-indigo-600 text-white text-sm py-2 rounded hover:bg-indigo-700 transition"
+                    onClick={() =>
+                      addToCart(product._id, product.name, product.price, product.image)
+                    }
+                  >
+                    Add to Cart
+                  </button>
+                </div>
               </div>
-            </div>
-          ))
-        )}
+            ))
+          )}
+        </div>
       </div>
+      <Footer />
     </>
   );
 };

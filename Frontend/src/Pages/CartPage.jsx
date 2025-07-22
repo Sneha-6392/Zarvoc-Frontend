@@ -74,7 +74,7 @@ export default function CartPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
-        <HashLoader color="#3B82F6" size={80} />
+        <HashLoader color="#070A52" size={80} /> {/* Using a common blue color */}
       </div>
     );
   }
