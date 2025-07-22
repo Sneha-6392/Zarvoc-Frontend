@@ -145,7 +145,11 @@ export default function CartPage() {
               <button
                 className="bg-blue-600 text-white px-8 py-3 mt-6 rounded-lg font-semibold shadow-md hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                 disabled={itemCount === 0}
+<<<<<<< HEAD
                 onClick={() => navigate('/checkout')}
+=======
+                onClick={() => window.location.href = '/checkout'}
+>>>>>>> 9b0b520b935c71ab6168007edd9f1356781f969b
               >
                 Proceed to Pay
               </button>
