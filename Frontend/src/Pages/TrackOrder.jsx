@@ -1,178 +1,235 @@
-import React, { useEffect, useState } from 'react';
-import { HashLoader } from 'react-spinners'; // Import HashLoader
-// Assuming you might have Navbar and Footer if this page is part of a larger app structure
-// import Navbar from '../Components/Navbar';
-// import Footer from '../Components/Footer';
+// SecureCheckout.jsx
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { HashLoader } from 'react-spinners';
 
-const TrackOrder = () => {
-  const [loading, setLoading] = useState(true); // Add loading state
+const SecureCheckout = () => {
+  const navigate = useNavigate();
+  const [selectedPayment, setSelectedPayment] = useState('');
+  const [couponCode, setCouponCode] = useState('');
+  const [upiId, setUpiId] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [discount, setDiscount] = useState(0);
+  const [instructions, setInstructions] = useState('');
+  const [address, setAddress] = useState('EWS 246-247, Ravi khand banglabazar, LUCKNOW, UTTAR PRADESH, 226012, India');
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
+
+  const baseTotal = 2198;
+  const discountedTotal = baseTotal - discount;
+
+  const isPayButtonEnabled = selectedPayment !== '';
+  const isCouponValid = couponCode.trim() !== '';
+  const isUpiValid = upiId.trim() !== '';
 
   useEffect(() => {
-    // Simulate a loading period for 3 seconds
-    const timer = setTimeout(() => setLoading(false), 3000); // Changed to 3000ms for 3 seconds
+    const timer = setTimeout(() => setLoading(false), 3000);
     return () => clearTimeout(timer);
   }, []);
 
-  const orderSteps = [
-    {
-      label: 'Order Placed',
-      icon: 'fa-bag-shopping',
-      time: '20 Feb 2024\n11:00 AM',
-      status: 'completed',
-    },
-    {
-      label: 'Accepted',
-      icon: 'fa-check',
-      time: '20 Feb 2024\n11:15 AM',
-      status: 'completed',
-    },
-    {
-      label: 'In Progress',
-      icon: 'fa-box',
-      time: 'Expected\n21 Feb 2024',
-      status: 'pending',
-    },
-    {
-      label: 'On the Way',
-      icon: 'fa-truck',
-      time: 'Expected\n22-23 Feb',
-      status: 'pending',
-    },
-    {
-      label: 'Delivered',
-      icon: 'fa-box-open',
-      time: 'Expected\n24 Feb',
-      status: 'pending',
-    },
-  ];
+  const handlePaymentSelect = (e) => {
+    setSelectedPayment(e.target.value);
+  };
 
-  const products = [
-    {
-      name: 'Trendy Brown Coat',
-      color: 'Brown',
-      size: 'XXL',
-      qty: 4,
-      image:
-        'https://assets.ajio.com/medias/sys_master/root/20240318/QuNj/65f8415616fd2c6e6a665789/-473Wx593H-467178188-brown-MODEL.jpg',
-    },
-    {
-      name: 'Classy Light Coat',
-      color: 'Cream',
-      size: 'XXL',
-      qty: 1,
-      image:
-        'https://assets.ajio.com/medias/sys_master/root/20240318/QuNj/65f8415616fd2c6e6a665789/-473Wx593H-467178188-brown-MODEL.jpg',
-    },
-    {
-      name: 'Light Brown Sweater',
-      color: 'Light Brown',
-      size: 'S',
-      qty: 1,
-      image:
-        'https://assets.ajio.com/medias/sys_master/root/20240318/QuNj/65f8415616fd2c6e6a665789/-473Wx593H-467178188-brown-MODEL.jpg',
-    },
-    {
-      name: 'Modern Brown Dress',
-      color: 'Brown',
-      size: 'S',
-      qty: 2,
-      image:
-        'https://assets.ajio.com/medias/sys_master/root/20240318/QuNj/65f8415616fd2c6e6a665789/-473Wx593H-467178188-brown-MODEL.jpg',
-    },
-  ];
+  const applyCoupon = () => {
+    const code = couponCode.trim().toUpperCase();
+    if (code === 'URBANTALES' || code === 'AJ001') {
+      setDiscount(baseTotal * 0.2);
+      alert('✅ Coupon Applied: 20% discount');
+    } else {
+      setDiscount(0);
+      alert('❌ Invalid Coupon');
+    }
+  };
+
+  const handleRazorpayPayment = async () => {
+    try {
+      const res = await fetch('http://localhost:3000/api/razorpay/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: discountedTotal })
+      });
+
+      const data = await res.json();
+
+      const options = {
+        key: 'rzp_test_QMG1XV6hszJZlA',
+        amount: data.amount,
+        currency: data.currency,
+        name: 'Zarvoc',
+        description: 'Order Payment',
+        order_id: data.id,
+        handler: function (response) {
+          alert('✅ Payment successful!');
+          console.log(response);
+          navigate('/track-order');
+        },
+        prefill: {
+          name: 'Customer Name',
+          email: 'customer@example.com',
+          contact: '9999999999'
+        },
+        theme: { color: '#070A52' },
+        image: 'https://seeklogo.com/images/R/razorpay-logo-B4B31B7918-seeklogo.com.png'
+      };
+
+      const razor = new window.Razorpay(options);
+      razor.open();
+    } catch (err) {
+      console.error('Razorpay error', err);
+      alert('Something went wrong!');
+    }
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
-        {/* HashLoader component with customizable color and size */}
         <HashLoader color="#070A52" size={80} />
       </div>
     );
   }
 
   return (
-    <div className="bg-gray-50 text-gray-800 min-h-screen">
-      {/* If Navbar is used, uncomment and import it */}
-      {/* <Navbar /> */}
-      <div className="text-center py-6">
-        <h1 className="text-3xl font-semibold">Track Your Order</h1>
-        <p className="text-sm text-gray-500 mt-1">Home / Track Your Order</p>
-      </div>
+    <div className="bg-gray-200 text-gray-800 min-h-screen">
+      <header className="bg-white flex justify-between items-center px-6 py-4 shadow">
+        <div className="text-xl font-bold">𝓩𝓪𝓻𝓿𝓸𝓬</div>
+        <h1 className="text-lg font-semibold">Secure checkout</h1>
+        <div className="text-2xl">🛒</div>
+      </header>
 
-      <div className="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow">
-        <p className="text-sm text-gray-600 mb-4">
-          Order ID : <span className="font-semibold">#SDGT1254FD</span>
-        </p>
-
-        <div className="grid grid-cols-5 gap-2 text-center mb-6 relative">
-          <div className="absolute top-6 left-0 w-full h-1 bg-gray-200 z-0 rounded-full"></div>
-          {orderSteps.map((step, index) => (
-            <div key={index} className="relative z-10">
-              <div
-                className={`w-10 h-10 mx-auto rounded-full flex items-center justify-center ${
-                  step.status === 'completed' ? 'bg-yellow-500' : 'bg-gray-300'
-                } text-white`}
-              >
-                <i className={`fa-solid ${step.icon}`}></i>
-              </div>
-              <p className="text-sm mt-2">{step.label}</p>
-              <p className="text-xs text-gray-500 mt-1" dangerouslySetInnerHTML={{ __html: step.time.replace(/\n/g, '<br/>') }} />
-            </div>
-          ))}
-        </div>
-
-        <div className="border-t pt-4">
-          <h3 className="font-semibold text-lg mb-4">Products</h3>
-          <div className="space-y-4">
-            {products.map((product, i) => (
-              <div key={i} className="flex items-center gap-4">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-14 h-14 rounded object-cover"
+      <main className="max-w-6xl mx-auto p-4 grid md:grid-cols-3 gap-4">
+        <section className="md:col-span-2 space-y-4">
+          <div className="bg-white p-4 rounded shadow">
+            <div className="flex justify-between">
+              <div className="w-full">
+                <h2 className="font-semibold">Delivering to xyz</h2>
+                {isEditingAddress ? (
+                  <textarea
+                    className="w-full border mt-1 p-2 text-sm rounded"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                  />
+                ) : (
+                  <p className="text-sm">{address}</p>
+                )}
+                <a href="#" className="text-sm text-blue-600 hover:underline block mt-1" onClick={() => alert('You can now write instructions below.')}>Add delivery instructions</a>
+                <textarea
+                  className="w-full mt-2 border border-gray-300 rounded p-2 text-sm"
+                  placeholder="Write any delivery instructions here..."
+                  value={instructions}
+                  onChange={(e) => setInstructions(e.target.value)}
                 />
-                <div>
-                  <p className="font-medium">{product.name}</p>
-                  <p className="text-sm text-gray-500">
-                    Color: {product.color} | Size: {product.size} | Qty: {product.qty}
-                  </p>
+              </div>
+              <button onClick={() => setIsEditingAddress(!isEditingAddress)} className="text-sm font-semibold text-black hover:underline ml-2">
+                {isEditingAddress ? 'Save' : 'Edit'}
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-white p-4 rounded shadow">
+            <h2 className="font-semibold mb-4">Payment Method</h2>
+            <div className="mb-4">
+              <label className="font-medium">Apply coupon</label>
+              <div className="flex mt-1">
+                <input
+                  type="text"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                  className="border border-gray-300 rounded-l px-3 py-1 w-full"
+                  placeholder="Enter coupon code"
+                />
+                <button
+                  onClick={applyCoupon}
+                  className={`px-4 rounded-r text-sm transition-all duration-200 ${
+                    isCouponValid ? 'bg-blue-500 hover:bg-blue-600 text-white cursor-pointer' : 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                  }`}
+                  disabled={!isCouponValid}
+                >
+                  Apply
+                </button>
+              </div>
+            </div>
+
+            <fieldset className="border border-gray-300 rounded p-4 space-y-4">
+              <legend className="font-medium">Another Payment Option</legend>
+              <div>
+                <label className="flex items-center space-x-2 hover:scale-105 hover:shadow transition duration-150 cursor-pointer">
+                  <input type="radio" name="payment" value="card" checked={selectedPayment === 'card'} onChange={handlePaymentSelect} />
+                  <span className="flex items-center space-x-2">
+                    <img src="https://seeklogo.com/images/R/razorpay-logo-B4B31B7918-seeklogo.com.png" className="h-5 w-5" alt="razorpay" />
+                    <span>Credit/Debit via Razorpay</span>
+                  </span>
+                </label>
+              </div>
+              <div>
+                <label className="flex items-center space-x-2">
+                  <input type="radio" name="payment" value="netbanking" checked={selectedPayment === 'netbanking'} onChange={handlePaymentSelect} />
+                  <span>Net Banking</span>
+                </label>
+                <select className="mt-1 border border-gray-300 rounded px-2 py-1 w-1/2 text-sm">
+                  <option>Choose an option</option>
+                  <option>SBI</option>
+                  <option>HDFC</option>
+                  <option>ICICI</option>
+                </select>
+              </div>
+              <div>
+                <label className="flex items-center space-x-2">
+                  <input type="radio" name="payment" value="upi" checked={selectedPayment === 'upi'} onChange={handlePaymentSelect} />
+                  <span>Other UPI Apps</span>
+                </label>
+                <div className="flex mt-1 items-center space-x-2">
+                  <input
+                    type="text"
+                    value={upiId}
+                    onChange={(e) => setUpiId(e.target.value)}
+                    placeholder="Add UPI ID"
+                    className="border border-gray-300 rounded px-3 py-1 text-sm"
+                  />
+                  <button
+                    disabled={!isUpiValid}
+                    className={`px-3 py-1 rounded text-sm transition-all duration-200 ${
+                      isUpiValid ? 'bg-green-500 hover:bg-green-600 text-white cursor-pointer' : 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                    }`}
+                  >
+                    Verify
+                  </button>
                 </div>
               </div>
-            ))}
+              <div>
+                <label className="flex items-center space-x-2">
+                  <input type="radio" name="payment" value="cod" checked={selectedPayment === 'cod'} onChange={handlePaymentSelect} />
+                  <span>Cash on Delivery/Pay on Delivery</span>
+                </label>
+              </div>
+            </fieldset>
           </div>
-        </div>
-      </div>
+        </section>
 
-      <div className="text-center mt-6">
-        <a
-          href="/"
-          className="inline-block mt-6 px-6 py-3 bg-blue-600 text-white rounded-md text-base hover:bg-blue-700 transition"
-        >
-          Continue Shopping
-        </a>
-      </div>
+        <aside className="bg-white p-4 rounded shadow h-fit">
+          <button
+            className={`w-full py-2 rounded text-sm mb-4 transition-all duration-200 ${
+              isPayButtonEnabled ? 'bg-yellow-500 hover:bg-yellow-600 text-white cursor-pointer' : 'bg-gray-300 text-gray-600 cursor-not-allowed'
+            }`}
+            disabled={!isPayButtonEnabled}
+            onClick={handleRazorpayPayment}
+          >
+            Use this payment method
+          </button>
 
-      <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 text-center text-sm mt-8 py-6 border-t">
-        <div>
-          <i className="fa-solid fa-box text-xl text-yellow-500 mb-2"></i>
-          <p className="font-semibold">Free Shipping</p>
-          <p className="text-gray-500">Free shipping for order above $180</p>
-        </div>
-        <div>
-          <i className="fa-solid fa-wallet text-xl text-yellow-500 mb-2"></i>
-          <p className="font-semibold">Flexible Payment</p>
-          <p className="text-gray-500">Multiple secure payment options</p>
-        </div>
-        <div>
-          <i className="fa-solid fa-headset text-xl text-yellow-500 mb-2"></i>
-          <p className="font-semibold">24x7 Support</p>
-          <p className="text-gray-500">We support online all days.</p>
-        </div>
-      </div>
-      {/* If Footer is used, uncomment and import it */}
-      {/* <Footer /> */}
+          <ul className="text-sm space-y-2">
+            <li className="flex justify-between"><span>Items:</span><span>₹2,000.00</span></li>
+            <li className="flex justify-between"><span>Delivery:</span><span>₹50.00</span></li>
+            <li className="flex justify-between"><span>Total:</span><span>₹2,050.00</span></li>
+            <li className="flex justify-between"><span>Promotion Applied:</span><span>- ₹{discount.toFixed(2)}</span></li>
+            <hr />
+            <li className="flex justify-between font-semibold text-lg mt-2">
+              <span>Order Total:</span><span>₹{discountedTotal.toFixed(2)}</span>
+            </li>
+          </ul>
+        </aside>
+      </main>
     </div>
   );
 };
 
-export default TrackOrder;
+export default SecureCheckout;

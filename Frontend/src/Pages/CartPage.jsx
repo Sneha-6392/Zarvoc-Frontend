@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Navbar from '../Components/Navbar';
 import Footer from '../Components/Footer';
 import { HashLoader } from "react-spinners";
+import { useNavigate } from 'react-router-dom';
 
 export default function CartPage() {
   const [cartItems, setCartItems] = useState([]);
@@ -11,6 +12,7 @@ export default function CartPage() {
 
   const storedUser = JSON.parse(localStorage.getItem('user'));
   const userId = storedUser?.id;
+  const navigate = useNavigate(); // ✅ Moved outside of return
 
   useEffect(() => {
     if (!userId) {
@@ -74,7 +76,7 @@ export default function CartPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
-        <HashLoader color="#070A52" size={80} /> {/* Using a common blue color */}
+        <HashLoader color="#070A52" size={80} />
       </div>
     );
   }
@@ -139,10 +141,11 @@ export default function CartPage() {
               <div className="text-xl font-semibold text-gray-800">
                 Subtotal ({itemCount} items): <strong className="text-blue-600">₹{subtotal.toFixed(2)}</strong>
               </div>
+
               <button
                 className="bg-blue-600 text-white px-8 py-3 mt-6 rounded-lg font-semibold shadow-md hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                 disabled={itemCount === 0}
-                onClick={() => window.location.href = 'checkout.html'}
+                onClick={() => navigate('/checkout')}
               >
                 Proceed to Pay
               </button>
