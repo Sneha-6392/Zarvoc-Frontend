@@ -211,19 +211,38 @@ function Badge({ count }) {
 }
 
 // ---- Navbar ----
-const Navbar = ({ cartCount, notificationCount, onSearch }) => {
+const Navbar = ({ cartCount, onSearch }) => { // Removed notificationCount from props as it's handled internally
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [currentNotificationCount, setCurrentNotificationCount] = useState(0); // Internal state for notification count
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     const token = localStorage.getItem("token");
     if (storedUser && token) setUser(storedUser);
-  }, []);
+
+    // --- NEW: Set up an interval to continuously check localStorage for notification updates ---
+    const checkNotifications = () => {
+      const storedCount = Number(localStorage.getItem("notificationCount") || 0);
+      if (storedCount !== currentNotificationCount) {
+        setCurrentNotificationCount(storedCount);
+      }
+    };
+
+    // Run once immediately
+    checkNotifications();
+
+    // Set up interval to run every 1 second (1000ms)
+    const intervalId = setInterval(checkNotifications, 1000);
+
+    // Clean up the interval when the component unmounts
+    return () => clearInterval(intervalId);
+
+  }, [currentNotificationCount]); // currentNotificationCount in dependency array ensures effect reruns if its value changes
 
   const cartQty = cartCount || Number(localStorage.getItem("cartCount") || 0);
-  const notifQty =
-    notificationCount || Number(localStorage.getItem("notificationCount") || 0);
+  // Use the internal state for notification quantity
+  const notifQty = currentNotificationCount;
 
   const handleLogin = () => navigate("/login");
   const handleLogout = () => {
@@ -269,7 +288,7 @@ const Navbar = ({ cartCount, notificationCount, onSearch }) => {
             className="relative w-10 h-10 flex items-center justify-center rounded-full text-white bg-[#070A52] hover:scale-105 transition"
           >
             <Bell className="w-5 h-5" />
-            <Badge count={notifQty} />
+            <Badge count={notifQty} /> {/* Now uses the dynamically updated notifQty */}
           </Link>
         </div>
       </div>
