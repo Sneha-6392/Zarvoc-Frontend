@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import open from "../assets/open.mp3"
 
+
 function Ai() {
   let { showSearch , setShowSearch } = useContext(ShopContext)
   let navigate = useNavigate()
@@ -144,6 +145,7 @@ function Ai() {
       navigate("/register")
       setShowSearch(false) 
     }
+     
     else {
       toast.error("I didn't understand that. Please try again.")
     }
