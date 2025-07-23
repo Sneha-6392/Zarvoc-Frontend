@@ -1,235 +1,573 @@
-// SecureCheckout.jsx
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { HashLoader } from 'react-spinners';
+import Navbar from '../Components/Navbar'; // Assuming this path is correct
+import Footer from '../Components/Footer'; // Assuming this path is correct
 
-const SecureCheckout = () => {
-  const navigate = useNavigate();
-  const [selectedPayment, setSelectedPayment] = useState('');
-  const [couponCode, setCouponCode] = useState('');
-  const [upiId, setUpiId] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [discount, setDiscount] = useState(0);
-  const [instructions, setInstructions] = useState('');
-  const [address, setAddress] = useState('EWS 246-247, Ravi khand banglabazar, LUCKNOW, UTTAR PRADESH, 226012, India');
-  const [isEditingAddress, setIsEditingAddress] = useState(false);
+const TrackOrder = () => {
+    // State to store user's geolocation
+    const [userLocation, setUserLocation] = useState(null);
+    const [locationError, setLocationError] = useState(null);
 
-  const baseTotal = 2198;
-  const discountedTotal = baseTotal - discount;
+    // State for order details, initialized with default/empty values
+    const [orderDetails, setOrderDetails] = useState({
+        orderPlacedDate: 'N/A',
+        totalAmount: '₹ 0.00',
+        shipTo: 'N/A',
+        orderNumber: '#N/A',
+        paymentMethod: 'N/A', // Added to display payment method
+        currentStatus: 'Order Confirmed', // Default to initial status
+        estimatedDelivery: 'Fetching...',
+        timeline: [
+            { status: 'Order Confirmed', completed: false },
+            { status: 'Picked Up', completed: false },
+            { status: 'Shipping', completed: false },
+            { status: 'Out for Delivery', completed: false },
+            { status: 'Delivered', completed: false },
+        ]
+    });
 
-  const isPayButtonEnabled = selectedPayment !== '';
-  const isCouponValid = couponCode.trim() !== '';
-  const isUpiValid = upiId.trim() !== '';
+    // **IMPORTANT: Replace with your actual Google Maps API Key**
+    const Maps_API_KEY = 'AIzaSyCNWvc2TPhfLT8QMLdDqUxIaAT9NR-INVA'; // <<<--- Replace this!
 
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 3000);
-    return () => clearTimeout(timer);
-  }, []);
+    useEffect(() => {
+        // Fetch order details from localStorage
+        const storedOrder = localStorage.getItem('lastPlacedOrder');
+        if (storedOrder) {
+            try {
+                const parsedOrder = JSON.parse(storedOrder);
 
-  const handlePaymentSelect = (e) => {
-    setSelectedPayment(e.target.value);
-  };
+                // Update timeline based on payment status or simulated progress
+                let updatedTimeline = orderDetails.timeline.map(item => ({ ...item, completed: false }));
+                let currentStatusText = 'Order Confirmed'; // Default
 
-  const applyCoupon = () => {
-    const code = couponCode.trim().toUpperCase();
-    if (code === 'URBANTALES' || code === 'AJ001') {
-      setDiscount(baseTotal * 0.2);
-      alert('✅ Coupon Applied: 20% discount');
-    } else {
-      setDiscount(0);
-      alert('❌ Invalid Coupon');
-    }
-  };
+                if (parsedOrder.paymentStatus === 'Successful' || parsedOrder.paymentMethod === 'cod') {
+                    // Simulate progress after successful payment or COD
+                    updatedTimeline[0].completed = true; // Order Confirmed
+                    updatedTimeline[1].completed = true; // Picked Up (simulated)
+                    updatedTimeline[2].completed = true; // Shipping (simulated)
+                    currentStatusText = 'Shipping'; // Set current status
+                }
 
-  const handleRazorpayPayment = async () => {
-    try {
-      const res = await fetch('http://localhost:3000/api/razorpay/order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: discountedTotal })
-      });
+                setOrderDetails(prevDetails => ({
+                    ...prevDetails,
+                    orderPlacedDate: parsedOrder.orderDate || 'N/A',
+                    totalAmount: `₹ ${parseFloat(parsedOrder.totalAmount).toFixed(2)}` || '₹ 0.00',
+                    shipTo: parsedOrder.address || 'N/A', // Use the full address
+                    orderNumber: parsedOrder.orderId || '#N/A',
+                    paymentMethod: getPaymentMethodDisplayName(parsedOrder.paymentMethod) || 'N/A', // Display readable payment name
+                    currentStatus: currentStatusText,
+                    timeline: updatedTimeline,
+                    // You might want a more sophisticated way to calculate estimated delivery
+                    estimatedDelivery: 'Approx. 5-7 business days' // This can be dynamic
+                }));
+            } catch (error) {
+                console.error("Error parsing order details from localStorage:", error);
+                localStorage.removeItem('lastPlacedOrder'); // Clear invalid data
+            }
+        } else {
+            console.warn("No 'lastPlacedOrder' found in localStorage.");
+        }
 
-      const data = await res.json();
+        // Geolocation fetching logic
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setUserLocation({
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                    });
+                    setLocationError(null);
+                },
+                (error) => {
+                    switch (error.code) {
+                        case error.PERMISSION_DENIED:
+                            setLocationError("User denied the request for Geolocation. Map may not show your precise location.");
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            setLocationError("Location information is unavailable. Map may not show your precise location.");
+                            break;
+                        case error.TIMEOUT:
+                            setLocationError("The request to get user location timed out. Map may not show your precise location.");
+                            break;
+                        case error.UNKNOWN_ERROR:
+                            setLocationError("An unknown error occurred while getting location. Map may not show your precise location.");
+                            break;
+                        default:
+                            setLocationError("An error occurred getting your location.");
+                    }
+                    setUserLocation(null);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0,
+                }
+            );
+        } else {
+            setLocationError("Geolocation is not supported by your browser. Map may not be fully functional.");
+        }
+    }, []); // Empty dependency array means this runs once on mount
 
-      const options = {
-        key: 'rzp_test_QMG1XV6hszJZlA',
-        amount: data.amount,
-        currency: data.currency,
-        name: 'Zarvoc',
-        description: 'Order Payment',
-        order_id: data.id,
-        handler: function (response) {
-          alert('✅ Payment successful!');
-          console.log(response);
-          navigate('/track-order');
-        },
-        prefill: {
-          name: 'Customer Name',
-          email: 'customer@example.com',
-          contact: '9999999999'
-        },
-        theme: { color: '#070A52' },
-        image: 'https://seeklogo.com/images/R/razorpay-logo-B4B31B7918-seeklogo.com.png'
-      };
+    // Helper function to get a readable payment method name
+    const getPaymentMethodDisplayName = (method) => {
+        switch (method) {
+            case 'card': return 'Credit/Debit Card';
+            case 'netbanking': return 'Net Banking';
+            case 'upi': return 'UPI';
+            case 'cod': return 'Cash on Delivery';
+            default: return method;
+        }
+    };
 
-      const razor = new window.Razorpay(options);
-      razor.open();
-    } catch (err) {
-      console.error('Razorpay error', err);
-      alert('Something went wrong!');
-    }
-  };
+    // CSS as a string, to be injected into a <style> tag
+    const componentStyles = `
+        :root {
+            --primary-blue: #070A52;
+            --secondary-yellow: #FFCC00;
+            --light-grey: #f0f0f0;
+            --dark-grey: #333;
+            --text-color: #555;
+            --border-color: #ddd;
+        }
 
-  if (loading) {
+        /* Basic reset */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-grey);
+        }
+
+        .order-tracking-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #f7f7f7; /* Background matching the image, slightly off-white/light orange */
+            padding: 20px;
+        }
+
+        /* Removed .tracking-header as it's replaced by Navbar */
+
+        /* Browser Mockup Styles */
+        .browser-mockup {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin: 0 auto;
+            width: 90%;
+            max-width: 1200px; /* Adjust max width as needed */
+            margin-top: 30px; /* Added space below Navbar */
+        }
+
+        .browser-header {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: #e2e2e2;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .browser-buttons span {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .browser-buttons .close { background-color: #ff5f56; }
+        .browser-buttons .minimize { background-color: #ffbd2e; }
+        .browser-buttons .maximize { background-color: #27c93f; }
+
+        .browser-address-bar {
+            flex-grow: 1;
+            margin: 0 15px;
+        }
+
+        .browser-address-bar input {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 0.9em;
+            text-align: center;
+            color: #666;
+        }
+
+        .browser-search i {
+            color: #666;
+            font-size: 1.2em;
+        }
+
+        .tracking-content {
+            padding: 30px;
+        }
+
+        .tracking-content h2 {
+            color: var(--primary-blue);
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .tracking-content .note {
+            font-size: 0.9em;
+            color: var(--text-color);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .order-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 40px;
+            background-color: var(--light-grey);
+        }
+
+        .summary-item {
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        .summary-item span {
+            display: block;
+            font-size: 0.8em;
+            color: var(--text-color);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .summary-item strong {
+            font-size: 1.1em;
+            color: var(--dark-grey);
+        }
+
+        .order-status-section {
+            margin-bottom: 40px;
+        }
+
+        .order-status-section h3 {
+            font-size: 1.3em;
+            color: var(--primary-blue);
+            margin-bottom: 10px;
+        }
+
+        .order-status-section .current-status {
+            color: var(--secondary-yellow);
+            font-weight: bold;
+        }
+
+        .order-status-section p {
+            font-size: 0.9em;
+            color: var(--text-color);
+            margin-bottom: 20px;
+        }
+
+        .timeline {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            position: relative;
+            padding: 20px 0;
+            margin-top: 20px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 35px; /* Adjust to align with dots */
+            left: 0;
+            right: 0;
+            height: 4px;
+            background-color: var(--border-color);
+            z-index: 0;
+        }
+
+        .timeline-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            flex: 1;
+            position: relative;
+            z-index: 1; /* Ensure dots and text are above the line */
+        }
+
+        .timeline-dot {
+            width: 30px;
+            height: 30px;
+            background-color: #fff;
+            border: 3px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .timeline-item.completed .timeline-dot {
+            background-color: var(--secondary-yellow);
+            border-color: var(--secondary-yellow);
+            color: var(--primary-blue); /* Checkmark color */
+        }
+
+        .timeline-item.completed .timeline-dot i {
+            color: var(--primary-blue);
+        }
+
+        .timeline-dot i {
+            font-size: 1.2em;
+        }
+
+        .timeline-info {
+            font-size: 0.9em;
+            color: var(--text-color);
+        }
+
+        .timeline-info .status-name {
+            font-weight: bold;
+            color: var(--dark-grey);
+            margin-bottom: 5px;
+        }
+
+        .timeline-info .status-date {
+            color: var(--text-color);
+        }
+
+        .shipping-information {
+            margin-top: 40px;
+        }
+
+        .shipping-information h3 {
+            font-size: 1.3em;
+            color: var(--primary-blue);
+            margin-bottom: 20px;
+        }
+
+        .map-section {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden; /* Ensures the iframe corners are rounded */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .map-section iframe {
+            display: block; /* Remove extra space below iframe */
+        }
+
+        .user-location-info {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--light-grey);
+            text-align: center;
+            font-size: 0.9em;
+            color: var(--text-color);
+        }
+        .user-location-info p {
+            margin: 5px 0;
+        }
+        .user-location-info .error {
+            color: #d9534f; /* Red for errors */
+            font-weight: bold;
+        }
+
+        .copyright {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.8em;
+            color: var(--text-color);
+            margin-top: auto; /* Pushes the copyright to the bottom */
+            background-color: #fff;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .order-summary {
+                grid-template-columns: 1fr;
+            }
+
+            .timeline {
+                flex-direction: column;
+                align-items: flex-start;
+                padding-left: 20px;
+            }
+
+            .timeline::before {
+                left: 30px; /* Adjust for vertical line */
+                top: 0;
+                bottom: 0;
+                width: 4px;
+                height: 100%;
+            }
+
+            .timeline-item {
+                flex-direction: row;
+                text-align: left;
+                margin-bottom: 20px;
+                width: 100%;
+                align-items: center;
+            }
+
+            .timeline-dot {
+                margin-right: 15px;
+                margin-bottom: 0;
+            }
+
+            .timeline-line {
+                display: none; /* Hide horizontal line for vertical layout */
+            }
+        }
+    `;
+
+    // Construct the Google Maps URL dynamically based on userLocation
+    const getMapSrc = () => {
+        // Default coordinates if userLocation isn't available or there's an error
+        const defaultLatitude = 27.1751; // Example: Taj Mahal latitude
+        const defaultLongitude = 78.0421; // Example: Taj Mahal longitude
+        const zoomLevel = 15; // You can adjust the zoom level
+
+        let lat = defaultLatitude;
+        let lng = defaultLongitude;
+
+        if (userLocation) {
+            lat = userLocation.latitude;
+            lng = userLocation.longitude;
+        }
+
+        // Using Google Maps Embed API with view mode
+        // The 'q' parameter is for search queries/locations. For specific lat/lng, 'center' and 'zoom' are used with 'view' mode.
+        // It's recommended to use the 'q' parameter with an address or place name for the Embed API to ensure a marker is shown.
+        // If you specifically want to show just the coordinates, 'q' can be `lat,lng`.
+        // Corrected URL: Use embed API with 'q' for location or 'center' and 'zoom' with 'map' mode
+        // For a marker at a specific lat/lng, the 'q' parameter is best.
+        return `https://www.google.com/maps/embed/v1/view?key=${Maps_API_KEY}&center=${lat},${lng}&zoom=${zoomLevel}`;
+    };
+
     return (
-      <div className="flex items-center justify-center h-screen bg-white">
-        <HashLoader color="#070A52" size={80} />
-      </div>
-    );
-  }
+        <div className="order-tracking-container">
+            <style dangerouslySetInnerHTML={{ __html: componentStyles }} />
 
-  return (
-    <div className="bg-gray-200 text-gray-800 min-h-screen">
-      <header className="bg-white flex justify-between items-center px-6 py-4 shadow">
-        <div className="text-xl font-bold">𝓩𝓪𝓻𝓿𝓸𝓬</div>
-        <h1 className="text-lg font-semibold">Secure checkout</h1>
-        <div className="text-2xl">🛒</div>
-      </header>
+            <Navbar /> {/* Your Navbar component */}
 
-      <main className="max-w-6xl mx-auto p-4 grid md:grid-cols-3 gap-4">
-        <section className="md:col-span-2 space-y-4">
-          <div className="bg-white p-4 rounded shadow">
-            <div className="flex justify-between">
-              <div className="w-full">
-                <h2 className="font-semibold">Delivering to xyz</h2>
-                {isEditingAddress ? (
-                  <textarea
-                    className="w-full border mt-1 p-2 text-sm rounded"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                  />
-                ) : (
-                  <p className="text-sm">{address}</p>
-                )}
-                <a href="#" className="text-sm text-blue-600 hover:underline block mt-1" onClick={() => alert('You can now write instructions below.')}>Add delivery instructions</a>
-                <textarea
-                  className="w-full mt-2 border border-gray-300 rounded p-2 text-sm"
-                  placeholder="Write any delivery instructions here..."
-                  value={instructions}
-                  onChange={(e) => setInstructions(e.target.value)}
-                />
-              </div>
-              <button onClick={() => setIsEditingAddress(!isEditingAddress)} className="text-sm font-semibold text-black hover:underline ml-2">
-                {isEditingAddress ? 'Save' : 'Edit'}
-              </button>
-            </div>
-          </div>
-
-          <div className="bg-white p-4 rounded shadow">
-            <h2 className="font-semibold mb-4">Payment Method</h2>
-            <div className="mb-4">
-              <label className="font-medium">Apply coupon</label>
-              <div className="flex mt-1">
-                <input
-                  type="text"
-                  value={couponCode}
-                  onChange={(e) => setCouponCode(e.target.value)}
-                  className="border border-gray-300 rounded-l px-3 py-1 w-full"
-                  placeholder="Enter coupon code"
-                />
-                <button
-                  onClick={applyCoupon}
-                  className={`px-4 rounded-r text-sm transition-all duration-200 ${
-                    isCouponValid ? 'bg-blue-500 hover:bg-blue-600 text-white cursor-pointer' : 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                  }`}
-                  disabled={!isCouponValid}
-                >
-                  Apply
-                </button>
-              </div>
-            </div>
-
-            <fieldset className="border border-gray-300 rounded p-4 space-y-4">
-              <legend className="font-medium">Another Payment Option</legend>
-              <div>
-                <label className="flex items-center space-x-2 hover:scale-105 hover:shadow transition duration-150 cursor-pointer">
-                  <input type="radio" name="payment" value="card" checked={selectedPayment === 'card'} onChange={handlePaymentSelect} />
-                  <span className="flex items-center space-x-2">
-                    <img src="https://seeklogo.com/images/R/razorpay-logo-B4B31B7918-seeklogo.com.png" className="h-5 w-5" alt="razorpay" />
-                    <span>Credit/Debit via Razorpay</span>
-                  </span>
-                </label>
-              </div>
-              <div>
-                <label className="flex items-center space-x-2">
-                  <input type="radio" name="payment" value="netbanking" checked={selectedPayment === 'netbanking'} onChange={handlePaymentSelect} />
-                  <span>Net Banking</span>
-                </label>
-                <select className="mt-1 border border-gray-300 rounded px-2 py-1 w-1/2 text-sm">
-                  <option>Choose an option</option>
-                  <option>SBI</option>
-                  <option>HDFC</option>
-                  <option>ICICI</option>
-                </select>
-              </div>
-              <div>
-                <label className="flex items-center space-x-2">
-                  <input type="radio" name="payment" value="upi" checked={selectedPayment === 'upi'} onChange={handlePaymentSelect} />
-                  <span>Other UPI Apps</span>
-                </label>
-                <div className="flex mt-1 items-center space-x-2">
-                  <input
-                    type="text"
-                    value={upiId}
-                    onChange={(e) => setUpiId(e.target.value)}
-                    placeholder="Add UPI ID"
-                    className="border border-gray-300 rounded px-3 py-1 text-sm"
-                  />
-                  <button
-                    disabled={!isUpiValid}
-                    className={`px-3 py-1 rounded text-sm transition-all duration-200 ${
-                      isUpiValid ? 'bg-green-500 hover:bg-green-600 text-white cursor-pointer' : 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                    }`}
-                  >
-                    Verify
-                  </button>
+            <div className="browser-mockup">
+                <div className="browser-header">
+                    <div className="browser-buttons">
+                        <span className="close"></span>
+                        <span className="minimize"></span>
+                        <span className="maximize"></span>
+                    </div>
+                    <div className="browser-address-bar">
+                        <input type="text" value="www.UrbanTales.com/Trackingpage" readOnly />
+                    </div>
+                    <div className="browser-search">
+                        <i className="fas fa-search"></i> {/* For a search icon, you might need Font Awesome */}
+                    </div>
                 </div>
-              </div>
-              <div>
-                <label className="flex items-center space-x-2">
-                  <input type="radio" name="payment" value="cod" checked={selectedPayment === 'cod'} onChange={handlePaymentSelect} />
-                  <span>Cash on Delivery/Pay on Delivery</span>
-                </label>
-              </div>
-            </fieldset>
-          </div>
-        </section>
 
-        <aside className="bg-white p-4 rounded shadow h-fit">
-          <button
-            className={`w-full py-2 rounded text-sm mb-4 transition-all duration-200 ${
-              isPayButtonEnabled ? 'bg-yellow-500 hover:bg-yellow-600 text-white cursor-pointer' : 'bg-gray-300 text-gray-600 cursor-not-allowed'
-            }`}
-            disabled={!isPayButtonEnabled}
-            onClick={handleRazorpayPayment}
-          >
-            Use this payment method
-          </button>
+                <div className="tracking-content">
+                    <h2>ORDER TRACKING PAGE</h2>
+                    <p className="note">Please note that estimated dates are subject to change without prior notice. For precise updates, refer to the live tracking below.</p>
 
-          <ul className="text-sm space-y-2">
-            <li className="flex justify-between"><span>Items:</span><span>₹2,000.00</span></li>
-            <li className="flex justify-between"><span>Delivery:</span><span>₹50.00</span></li>
-            <li className="flex justify-between"><span>Total:</span><span>₹2,050.00</span></li>
-            <li className="flex justify-between"><span>Promotion Applied:</span><span>- ₹{discount.toFixed(2)}</span></li>
-            <hr />
-            <li className="flex justify-between font-semibold text-lg mt-2">
-              <span>Order Total:</span><span>₹{discountedTotal.toFixed(2)}</span>
-            </li>
-          </ul>
-        </aside>
-      </main>
-    </div>
-  );
+                    <div className="order-summary">
+                        <div className="summary-item">
+                            <span>ORDER PLACED ON</span>
+                            <strong>{orderDetails.orderPlacedDate}</strong>
+                        </div>
+                        <div className="summary-item">
+                            <span>TOTAL AMOUNT</span>
+                            <strong>{orderDetails.totalAmount}</strong> {/* Dynamically rendered */}
+                        </div>
+                        <div className="summary-item">
+                            <span>PAYMENT METHOD</span> {/* New field */}
+                            <strong>{orderDetails.paymentMethod}</strong> {/* Dynamically rendered */}
+                        </div>
+                        <div className="summary-item">
+                            <span>SHIPPING TO</span>
+                            <strong>{orderDetails.shipTo}</strong> {/* Dynamically rendered */}
+                        </div>
+                        <div className="summary-item">
+                            <span>ORDER ID</span>
+                            <strong>{orderDetails.orderNumber}</strong> {/* Dynamically rendered */}
+                        </div>
+                    </div>
+
+                    <div className="order-status-section">
+                        <h3>Current Status: <span className="current-status">{orderDetails.currentStatus}</span></h3>
+                        <p>Estimated Delivery: {orderDetails.estimatedDelivery}</p>
+
+                        <div className="timeline">
+                            {orderDetails.timeline.map((item, index) => (
+                                <div key={index} className={`timeline-item ${item.completed ? 'completed' : ''}`}>
+                                    <div className="timeline-dot">
+                                        {item.completed && <i className="fas fa-check-circle"></i>} {/* Checkmark icon */}
+                                    </div>
+                                    <div className="timeline-info">
+                                        <p className="status-name">{item.status}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="shipping-information">
+                        <h3>LIVE TRACKING</h3>
+                        <p className="note">Get real-time updates on your order's journey.</p>
+                        <div className="map-section">
+                            <iframe
+                                src={getMapSrc()}
+                                width="100%"
+                                height="300"
+                                style={{ border: 0 }}
+                                allowFullScreen=""
+                                loading="lazy"
+                                referrerPolicy="no-referrer-when-downgrade"
+                                title="Live Shipping Map"
+                            ></iframe>
+                        </div>
+
+                        <div className="user-location-info">
+                            <h4>Your Current Location (Approximate)</h4>
+                            {locationError && <p className="error">{locationError}</p>}
+                            {userLocation ? (
+                                <>
+                                    <p>Latitude: {userLocation.latitude.toFixed(6)}</p>
+                                    <p>Longitude: {userLocation.longitude.toFixed(6)}</p>
+                                    <p>
+                                        <a
+                                            href={`https://www.google.com/maps/search/?api=1&query=${userLocation.latitude},${userLocation.longitude}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            style={{ color: '#070A52', textDecoration: 'underline' }}
+                                        >
+                                            View on Google Maps
+                                        </a>
+                                    </p>
+                                </>
+                            ) : (
+                                !locationError && <p>Fetching your location...</p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <Footer /> {/* Your Footer component */}
+            <div className="copyright">
+                <p>© {new Date().getFullYear()} UrbanTales. All rights reserved.</p>
+            </div>
+        </div>
+    );
 };
 
-export default SecureCheckout;
+export default TrackOrder;
