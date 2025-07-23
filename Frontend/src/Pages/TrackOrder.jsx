@@ -460,11 +460,7 @@ const TrackOrder = () => {
             <div className="browser-mockup">
                 
 
-<<<<<<< HEAD
-                <div className="tracking-content" >
-=======
                 <div className="tracking-content">
->>>>>>> 1de52d2ddba205d1bef3eceabdefb4a5e76ef350
                     <h2>TRACK YOUR ORDER</h2>
                     <p className="note">Please note that estimated dates are subject to change without prior notice. For precise updates, refer to the live tracking below.</p>
 
