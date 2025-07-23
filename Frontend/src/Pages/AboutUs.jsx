@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { HashLoader } from "react-spinners"; // Import HashLoader
-import Navbar from "../Components/Navbar"; // Import Navbar component
-import Footer from "../Components/Footer"; // Import Footer component
+import { HashLoader } from "react-spinners"; 
+import Navbar from "../Components/Navbar"; 
+import Footer from "../Components/Footer"; 
+
 
 const AboutUs = () => {
   const [loading, setLoading] = useState(true);

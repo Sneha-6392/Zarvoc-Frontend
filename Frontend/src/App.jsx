@@ -28,6 +28,7 @@ import HelpCenter from './Pages/HelpCenter.jsx';
 import Signup from './Pages/Signup.jsx';
 import Category from './Pages/Category.jsx';
 import OrderConfirmed from './Pages/OrderConfirmed.jsx';
+import Notifications from './Pages/Notifications.jsx'; // Import Notifications page
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -65,6 +66,8 @@ function App() {
           <Route path="/register" element={<Signup />} />
           <Route path="/category" element={<Category />} />
           <Route path="/orderconfirmed" element={<OrderConfirmed />} />
+          <Route path="/notifications" element={<Notifications />} /> {/* Add Notifications route */}
+
 
           {/* Add more routes as needed */}
           

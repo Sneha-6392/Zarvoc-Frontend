@@ -1,13 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Navbar from '../Components/Navbar'; // Assuming this path is correct
-import Footer from '../Components/Footer'; // Assuming this path is correct
-
-// Leaflet CSS import (important for map display)
+import Navbar from '../Components/Navbar'; 
+import Footer from '../Components/Footer';
 import 'leaflet/dist/leaflet.css';
-import L from 'leaflet'; // Leaflet library import
-
-// This is a common fix for Leaflet's default icon not showing up correctly
-// in some bundlers like Webpack (used by Create React App).
+import L from 'leaflet'; 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',

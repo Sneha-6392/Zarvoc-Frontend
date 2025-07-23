@@ -69,3 +69,29 @@ export const login = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+export const updateProfile = async (req, res) => {
+  const userId = req.userId; // This should come from JWT middleware
+  const { fullName, phone, address } = req.body;
+
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { fullName, phone, address }, // only fields you want to allow
+      { new: true }
+    );
+
+    res.status(200).json({
+      message: "Profile updated successfully.",
+      user: {
+        id: updatedUser._id,
+        fullName: updatedUser.fullName,
+        email: updatedUser.email,
+        phone: updatedUser.phone,
+        address: updatedUser.address,
+        role: updatedUser.role,
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
