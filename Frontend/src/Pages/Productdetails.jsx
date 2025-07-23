@@ -230,7 +230,7 @@ const ProductDetails = () => {
           </div>
           <button
             onClick={handleFinish}
-            className="w-full mt-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold"
+            className="w-full mt-4 py-2 rounded-lg bg-[#070A52] hover:bg-[#FFCC00] text-white font-semibold"
           >
             Finish
           </button>

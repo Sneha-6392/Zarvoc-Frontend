@@ -1,20 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Navbar from '../Components/Navbar'; // Assuming this path is correct
 import Footer from '../Components/Footer'; // Assuming this path is correct
 
+// Leaflet CSS import (important for map display)
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet'; // Leaflet library import
+
+// This is a common fix for Leaflet's default icon not showing up correctly
+// in some bundlers like Webpack (used by Create React App).
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+    iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+    shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+});
+
+
 const TrackOrder = () => {
-    // State to store user's geolocation
-    const [userLocation, setUserLocation] = useState(null);
-    const [locationError, setLocationError] = useState(null);
+    // State to store shipping address geolocation
+    const [shippingLocation, setShippingLocation] = useState(null);
+    const [locationError, setLocationError] = useState(null); // Renamed for clarity
+
+    // Refs to hold the map and marker instances, preventing re-initialization on re-renders
+    const mapRef = useRef(null);
+    const markerRef = useRef(null);
 
     // State for order details, initialized with default/empty values
     const [orderDetails, setOrderDetails] = useState({
         orderPlacedDate: 'N/A',
         totalAmount: '₹ 0.00',
-        shipTo: 'N/A',
+        shipTo: 'N/A', // This will be updated from localStorage
         orderNumber: '#N/A',
-        paymentMethod: 'N/A', // Added to display payment method
-        currentStatus: 'Order Confirmed', // Default to initial status
+        paymentMethod: 'N/A',
+        currentStatus: 'Order Confirmed',
         estimatedDelivery: 'Fetching...',
         timeline: [
             { status: 'Order Confirmed', completed: false },
@@ -25,19 +43,15 @@ const TrackOrder = () => {
         ]
     });
 
-    // **IMPORTANT: Replace with your actual Google Maps API Key**
-    const Maps_API_KEY = 'AIzaSyCNWvc2TPhfLT8QMLdDqUxIaAT9NR-INVA'; // <<<--- Replace this!
-
     useEffect(() => {
-        // Fetch order details from localStorage
+        // --- Order Details Fetching Logic ---
         const storedOrder = localStorage.getItem('lastPlacedOrder');
+        let parsedOrder = null;
         if (storedOrder) {
             try {
-                const parsedOrder = JSON.parse(storedOrder);
-
-                // Update timeline based on payment status or simulated progress
+                parsedOrder = JSON.parse(storedOrder);
                 let updatedTimeline = orderDetails.timeline.map(item => ({ ...item, completed: false }));
-                let currentStatusText = 'Order Confirmed'; // Default
+                let currentStatusText = 'Order Confirmed';
 
                 if (parsedOrder.paymentStatus === 'Successful' || parsedOrder.paymentMethod === 'cod') {
                     // Simulate progress after successful payment or COD
@@ -51,13 +65,12 @@ const TrackOrder = () => {
                     ...prevDetails,
                     orderPlacedDate: parsedOrder.orderDate || 'N/A',
                     totalAmount: `₹ ${parseFloat(parsedOrder.totalAmount).toFixed(2)}` || '₹ 0.00',
-                    shipTo: parsedOrder.address || 'N/A', // Use the full address
+                    shipTo: parsedOrder.address || 'N/A',
                     orderNumber: parsedOrder.orderId || '#N/A',
-                    paymentMethod: getPaymentMethodDisplayName(parsedOrder.paymentMethod) || 'N/A', // Display readable payment name
+                    paymentMethod: getPaymentMethodDisplayName(parsedOrder.paymentMethod) || 'N/A',
                     currentStatus: currentStatusText,
                     timeline: updatedTimeline,
-                    // You might want a more sophisticated way to calculate estimated delivery
-                    estimatedDelivery: 'Approx. 5-7 business days' // This can be dynamic
+                    estimatedDelivery: 'Approx. 5-7 business days'
                 }));
             } catch (error) {
                 console.error("Error parsing order details from localStorage:", error);
@@ -67,45 +80,51 @@ const TrackOrder = () => {
             console.warn("No 'lastPlacedOrder' found in localStorage.");
         }
 
-        // Geolocation fetching logic
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    setUserLocation({
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude,
-                    });
-                    setLocationError(null);
-                },
-                (error) => {
-                    switch (error.code) {
-                        case error.PERMISSION_DENIED:
-                            setLocationError("User denied the request for Geolocation. Map may not show your precise location.");
-                            break;
-                        case error.POSITION_UNAVAILABLE:
-                            setLocationError("Location information is unavailable. Map may not show your precise location.");
-                            break;
-                        case error.TIMEOUT:
-                            setLocationError("The request to get user location timed out. Map may not show your precise location.");
-                            break;
-                        case error.UNKNOWN_ERROR:
-                            setLocationError("An unknown error occurred while getting location. Map may not show your precise location.");
-                            break;
-                        default:
-                            setLocationError("An error occurred getting your location.");
-                    }
-                    setUserLocation(null);
-                },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 0,
-                }
-            );
-        } else {
-            setLocationError("Geolocation is not supported by your browser. Map may not be fully functional.");
+        // --- Map Initialization and Shipping Location Display ---
+        // Default to Agra, India if no specific shipping address is found or geocoding fails
+        const defaultLatitude = 27.1751;
+        const defaultLongitude = 78.0421;
+        const defaultZoom = 13;
+
+        // Initialize map only once when the component mounts
+        if (!mapRef.current) {
+            mapRef.current = L.map('map-container').setView([defaultLatitude, defaultLongitude], defaultZoom);
+
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(mapRef.current);
         }
-    }, []); // Empty dependency array means this runs once on mount
+
+        // Use the shipTo address for the map
+        const addressToMap = parsedOrder?.address || 'Agra, India'; // Fallback to Agra if no address in order
+
+        // Simulate geocoding for the shipping address
+        // In a real application, you would use a geocoding API here (e.g., Google Maps Geocoding API, OpenStreetMap Nominatim)
+        // For this example, we'll use hardcoded coordinates for Agra as a placeholder.
+        // If you were to integrate a real geocoding service, this section would involve an async call.
+        const geocodedLatitude = defaultLatitude; // Placeholder for geocoded latitude
+        const geocodedLongitude = defaultLongitude; // Placeholder for geocoded longitude
+
+        const newLatLng = new L.LatLng(geocodedLatitude, geocodedLongitude);
+
+        setShippingLocation({ latitude: geocodedLatitude, longitude: geocodedLongitude, address: addressToMap });
+        setLocationError(null); // Clear any previous errors
+
+        // Add or update marker on the map
+        if (!markerRef.current) {
+            markerRef.current = L.marker(newLatLng).addTo(mapRef.current)
+                .bindPopup(`Shipping to: ${addressToMap}`) // Optional popup
+                .openPopup();
+        } else {
+            markerRef.current.setLatLng(newLatLng);
+            markerRef.current.getPopup().setContent(`Shipping to: ${addressToMap}`);
+        }
+
+        // Center the map on the shipping location
+        mapRef.current.setView(newLatLng, defaultZoom);
+
+    }, []); // Empty dependency array ensures this runs only once on component mount
 
     // Helper function to get a readable payment method name
     const getPaymentMethodDisplayName = (method) => {
@@ -118,7 +137,7 @@ const TrackOrder = () => {
         }
     };
 
-    // CSS as a string, to be injected into a <style> tag
+    // --- Component Styles ---
     const componentStyles = `
         :root {
             --primary-blue: #070A52;
@@ -129,7 +148,6 @@ const TrackOrder = () => {
             --border-color: #ddd;
         }
 
-        /* Basic reset */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -141,13 +159,10 @@ const TrackOrder = () => {
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            background-color: #f7f7f7; /* Background matching the image, slightly off-white/light orange */
+            background-color: #f7f7f7;
             padding: 20px;
         }
 
-        /* Removed .tracking-header as it's replaced by Navbar */
-
-        /* Browser Mockup Styles */
         .browser-mockup {
             background-color: #fff;
             border-radius: 8px;
@@ -155,8 +170,8 @@ const TrackOrder = () => {
             overflow: hidden;
             margin: 0 auto;
             width: 90%;
-            max-width: 1200px; /* Adjust max width as needed */
-            margin-top: 30px; /* Added space below Navbar */
+            max-width: 1200px;
+            margin-top: 30px;
         }
 
         .browser-header {
@@ -232,6 +247,9 @@ const TrackOrder = () => {
         .summary-item {
             text-align: center;
             padding: 10px 0;
+            /* Add the background color here */
+            background-color: #FFCC00; /* This applies the desired background color */
+            border-radius: 5px; /* Optional: adds a slight rounded corner to each item */
         }
 
         .summary-item span {
@@ -281,7 +299,7 @@ const TrackOrder = () => {
         .timeline::before {
             content: '';
             position: absolute;
-            top: 35px; /* Adjust to align with dots */
+            top: 35px;
             left: 0;
             right: 0;
             height: 4px;
@@ -296,7 +314,7 @@ const TrackOrder = () => {
             text-align: center;
             flex: 1;
             position: relative;
-            z-index: 1; /* Ensure dots and text are above the line */
+            z-index: 1;
         }
 
         .timeline-dot {
@@ -316,7 +334,7 @@ const TrackOrder = () => {
         .timeline-item.completed .timeline-dot {
             background-color: var(--secondary-yellow);
             border-color: var(--secondary-yellow);
-            color: var(--primary-blue); /* Checkmark color */
+            color: var(--primary-blue);
         }
 
         .timeline-item.completed .timeline-dot i {
@@ -355,12 +373,16 @@ const TrackOrder = () => {
         .map-section {
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            overflow: hidden; /* Ensures the iframe corners are rounded */
+            overflow: hidden;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            position: relative;
         }
 
-        .map-section iframe {
-            display: block; /* Remove extra space below iframe */
+        /* Essential for Leaflet map to display */
+        #map-container {
+            height: 300px;
+            width: 100%;
+            border-radius: 8px;
         }
 
         .user-location-info {
@@ -377,7 +399,7 @@ const TrackOrder = () => {
             margin: 5px 0;
         }
         .user-location-info .error {
-            color: #d9534f; /* Red for errors */
+            color: #d9534f;
             font-weight: bold;
         }
 
@@ -386,12 +408,11 @@ const TrackOrder = () => {
             padding: 20px;
             font-size: 0.8em;
             color: var(--text-color);
-            margin-top: auto; /* Pushes the copyright to the bottom */
+            margin-top: auto;
             background-color: #fff;
             border-top: 1px solid var(--border-color);
         }
 
-        /* Responsive adjustments */
         @media (max-width: 768px) {
             .order-summary {
                 grid-template-columns: 1fr;
@@ -404,7 +425,7 @@ const TrackOrder = () => {
             }
 
             .timeline::before {
-                left: 30px; /* Adjust for vertical line */
+                left: 30px;
                 top: 0;
                 bottom: 0;
                 width: 4px;
@@ -425,58 +446,26 @@ const TrackOrder = () => {
             }
 
             .timeline-line {
-                display: none; /* Hide horizontal line for vertical layout */
+                display: none;
             }
         }
     `;
-
-    // Construct the Google Maps URL dynamically based on userLocation
-    const getMapSrc = () => {
-        // Default coordinates if userLocation isn't available or there's an error
-        const defaultLatitude = 27.1751; // Example: Taj Mahal latitude
-        const defaultLongitude = 78.0421; // Example: Taj Mahal longitude
-        const zoomLevel = 15; // You can adjust the zoom level
-
-        let lat = defaultLatitude;
-        let lng = defaultLongitude;
-
-        if (userLocation) {
-            lat = userLocation.latitude;
-            lng = userLocation.longitude;
-        }
-
-        // Using Google Maps Embed API with view mode
-        // The 'q' parameter is for search queries/locations. For specific lat/lng, 'center' and 'zoom' are used with 'view' mode.
-        // It's recommended to use the 'q' parameter with an address or place name for the Embed API to ensure a marker is shown.
-        // If you specifically want to show just the coordinates, 'q' can be `lat,lng`.
-        // Corrected URL: Use embed API with 'q' for location or 'center' and 'zoom' with 'map' mode
-        // For a marker at a specific lat/lng, the 'q' parameter is best.
-        return `https://www.google.com/maps/embed/v1/view?key=${Maps_API_KEY}&center=${lat},${lng}&zoom=${zoomLevel}`;
-    };
 
     return (
         <div className="order-tracking-container">
             <style dangerouslySetInnerHTML={{ __html: componentStyles }} />
 
-            <Navbar /> {/* Your Navbar component */}
+            <Navbar />
 
             <div className="browser-mockup">
-                <div className="browser-header">
-                    <div className="browser-buttons">
-                        <span className="close"></span>
-                        <span className="minimize"></span>
-                        <span className="maximize"></span>
-                    </div>
-                    <div className="browser-address-bar">
-                        <input type="text" value="www.UrbanTales.com/Trackingpage" readOnly />
-                    </div>
-                    <div className="browser-search">
-                        <i className="fas fa-search"></i> {/* For a search icon, you might need Font Awesome */}
-                    </div>
-                </div>
+                
 
+<<<<<<< HEAD
+                <div className="tracking-content" >
+=======
                 <div className="tracking-content">
-                    <h2>ORDER TRACKING PAGE</h2>
+>>>>>>> 1de52d2ddba205d1bef3eceabdefb4a5e76ef350
+                    <h2>TRACK YOUR ORDER</h2>
                     <p className="note">Please note that estimated dates are subject to change without prior notice. For precise updates, refer to the live tracking below.</p>
 
                     <div className="order-summary">
@@ -486,19 +475,19 @@ const TrackOrder = () => {
                         </div>
                         <div className="summary-item">
                             <span>TOTAL AMOUNT</span>
-                            <strong>{orderDetails.totalAmount}</strong> {/* Dynamically rendered */}
+                            <strong>{orderDetails.totalAmount}</strong>
                         </div>
                         <div className="summary-item">
-                            <span>PAYMENT METHOD</span> {/* New field */}
-                            <strong>{orderDetails.paymentMethod}</strong> {/* Dynamically rendered */}
+                            <span>PAYMENT METHOD</span>
+                            <strong>{orderDetails.paymentMethod}</strong>
                         </div>
                         <div className="summary-item">
                             <span>SHIPPING TO</span>
-                            <strong>{orderDetails.shipTo}</strong> {/* Dynamically rendered */}
+                            <strong>{orderDetails.shipTo}</strong>
                         </div>
                         <div className="summary-item">
                             <span>ORDER ID</span>
-                            <strong>{orderDetails.orderNumber}</strong> {/* Dynamically rendered */}
+                            <strong>{orderDetails.orderNumber}</strong>
                         </div>
                     </div>
 
@@ -510,7 +499,7 @@ const TrackOrder = () => {
                             {orderDetails.timeline.map((item, index) => (
                                 <div key={index} className={`timeline-item ${item.completed ? 'completed' : ''}`}>
                                     <div className="timeline-dot">
-                                        {item.completed && <i className="fas fa-check-circle"></i>} {/* Checkmark icon */}
+                                        {item.completed && <i className="fas fa-check-circle"></i>}
                                     </div>
                                     <div className="timeline-info">
                                         <p className="status-name">{item.status}</p>
@@ -524,45 +513,38 @@ const TrackOrder = () => {
                         <h3>LIVE TRACKING</h3>
                         <p className="note">Get real-time updates on your order's journey.</p>
                         <div className="map-section">
-                            <iframe
-                                src={getMapSrc()}
-                                width="100%"
-                                height="300"
-                                style={{ border: 0 }}
-                                allowFullScreen=""
-                                loading="lazy"
-                                referrerPolicy="no-referrer-when-downgrade"
-                                title="Live Shipping Map"
-                            ></iframe>
+                            {/* This is where the Leaflet map will be rendered */}
+                            <div id="map-container"></div>
                         </div>
 
                         <div className="user-location-info">
-                            <h4>Your Current Location (Approximate)</h4>
+                            <h4>Shipping Address Location (Approximate)</h4>
                             {locationError && <p className="error">{locationError}</p>}
-                            {userLocation ? (
+                            {shippingLocation ? (
                                 <>
-                                    <p>Latitude: {userLocation.latitude.toFixed(6)}</p>
-                                    <p>Longitude: {userLocation.longitude.toFixed(6)}</p>
+                                    <p>Address: {shippingLocation.address}</p>
+                                    <p>Latitude: {shippingLocation.latitude.toFixed(6)}</p>
+                                    <p>Longitude: {shippingLocation.longitude.toFixed(6)}</p>
                                     <p>
                                         <a
-                                            href={`https://www.google.com/maps/search/?api=1&query=${userLocation.latitude},${userLocation.longitude}`}
+                                            href={`https://www.openstreetmap.org/?mlat=${shippingLocation.latitude}&mlon=${shippingLocation.longitude}#map=15/${shippingLocation.latitude}/${shippingLocation.longitude}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             style={{ color: '#070A52', textDecoration: 'underline' }}
                                         >
-                                            View on Google Maps
+                                            View on OpenStreetMap
                                         </a>
                                     </p>
                                 </>
                             ) : (
-                                !locationError && <p>Fetching your location...</p>
+                                !locationError && <p>Fetching shipping location...</p>
                             )}
                         </div>
                     </div>
                 </div>
             </div>
 
-            <Footer /> {/* Your Footer component */}
+            <Footer />
             <div className="copyright">
                 <p>© {new Date().getFullYear()} UrbanTales. All rights reserved.</p>
             </div>
