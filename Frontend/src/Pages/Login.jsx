@@ -24,7 +24,7 @@ const Login = () => {
             });
             console.log("login data " , data);
             
-
+            
             localStorage.setItem('isLoggedIn', true);
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
