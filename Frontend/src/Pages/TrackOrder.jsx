@@ -458,22 +458,10 @@ const TrackOrder = () => {
             <Navbar />
 
             <div className="browser-mockup">
-                <div className="browser-header">
-                    <div className="browser-buttons">
-                        <span className="close"></span>
-                        <span className="minimize"></span>
-                        <span className="maximize"></span>
-                    </div>
-                    <div className="browser-address-bar">
-                        <input type="text" value="www.UrbanTales.com/Trackingpage" readOnly />
-                    </div>
-                    <div className="browser-search">
-                        <i className="fas fa-search"></i>
-                    </div>
-                </div>
+                
 
                 <div className="tracking-content" >
-                    <h2>ORDER TRACKING PAGE</h2>
+                    <h2>TRACK YOUR ORDER</h2>
                     <p className="note">Please note that estimated dates are subject to change without prior notice. For precise updates, refer to the live tracking below.</p>
 
                     <div className="order-summary">
