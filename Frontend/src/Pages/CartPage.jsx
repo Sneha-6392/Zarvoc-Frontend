@@ -1,32 +1,35 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../Components/Navbar';
-import Footer from '../Components/Footer'; // Ensure Footer.jsx exists
-import { HashLoader } from "react-spinners"; // Import HashLoader
+import Footer from '../Components/Footer';
+import { HashLoader } from "react-spinners";
+import { useNavigate } from 'react-router-dom';
 
 export default function CartPage() {
   const [cartItems, setCartItems] = useState([]);
   const [subtotal, setSubtotal] = useState(0);
   const [itemCount, setItemCount] = useState(0);
-  const [loading, setLoading] = useState(true); // New state for loading
+  const [loading, setLoading] = useState(true);
 
-  const userId = localStorage.getItem('userId');
+  const storedUser = JSON.parse(localStorage.getItem('user'));
+  const userId = storedUser?.id;
+  const navigate = useNavigate(); // ✅ Moved outside of return
 
   useEffect(() => {
     if (!userId) {
-      setLoading(false); // No user, so no loading needed
+      setLoading(false);
       return;
     }
 
-    setLoading(true); // Start loading
+    setLoading(true);
     fetch(`http://localhost:3000/api/cart/${userId}`)
       .then(res => res.json())
       .then(data => {
-        setCartItems(data);
-        setLoading(false); // End loading on success
+        setCartItems(data.items || []);
+        setLoading(false);
       })
       .catch(err => {
         console.error('Cart load error:', err);
-        setLoading(false); // End loading on error
+        setLoading(false);
       });
   }, [userId]);
 
@@ -42,9 +45,9 @@ export default function CartPage() {
   }, [cartItems]);
 
   const updateQty = (itemId, qty) => {
-    if (qty < 1) qty = 1; // Ensure quantity is at least 1
+    if (qty < 1) qty = 1;
     fetch(`http://localhost:3000/api/cart/update`, {
-      method: 'PUT',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId, itemId, qty })
     })
@@ -60,7 +63,7 @@ export default function CartPage() {
 
   const deleteItem = (itemId) => {
     fetch(`http://localhost:3000/api/cart/remove`, {
-      method: 'PUT',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId, itemId })
     })
@@ -70,11 +73,10 @@ export default function CartPage() {
       .catch(err => console.error('Delete failed', err));
   };
 
-  // Show HashLoader while loading is true
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
-        <HashLoader color="#070A52" size={80} /> {/* Using a common blue color */}
+        <HashLoader color="#070A52" size={80} />
       </div>
     );
   }
@@ -82,7 +84,6 @@ export default function CartPage() {
   return (
     <>
       <Navbar />
-
       <div className="w-[90%] max-w-[900px] mx-auto my-10 md:my-20 bg-white p-6 md:p-10 rounded-lg shadow-lg">
         <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center text-gray-800">Shopping Cart</h1>
 
@@ -132,19 +133,19 @@ export default function CartPage() {
                   >
                     <span className="mr-1">🗑</span> Delete
                   </button>
-                  {/* You can re-add these if they have functionality later */}
-                  {/* <span className="text-gray-500 text-sm">| Save for later | Share | See more like this</span> */}
                 </div>
               </div>
             ))}
+
             <div className="border-t pt-6 mt-6 text-right">
               <div className="text-xl font-semibold text-gray-800">
                 Subtotal ({itemCount} items): <strong className="text-blue-600">₹{subtotal.toFixed(2)}</strong>
               </div>
+
               <button
                 className="bg-blue-600 text-white px-8 py-3 mt-6 rounded-lg font-semibold shadow-md hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                 disabled={itemCount === 0}
-                onClick={() => window.location.href = 'checkout.html'}
+                onClick={() => navigate('/checkout')}
               >
                 Proceed to Pay
               </button>
@@ -152,7 +153,6 @@ export default function CartPage() {
           </>
         )}
       </div>
-
       <Footer />
     </>
   );

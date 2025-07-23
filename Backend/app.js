@@ -8,6 +8,8 @@ import productRoutes from './routes/product.routes.js';
 import sellerRoutes from './routes/Seller.routes.js';
 import googleRoutes from './routes/google.routes.js';
 
+import cartRoutes from "./routes/Cart.routes.js";
+
 
 dotenv.config();
 const app = express();
@@ -17,6 +19,7 @@ app.use('/api/users', userRoutes);
 app.use('/api', productRoutes);
 app.use("/api/sellers", sellerRoutes);
 app.use("/api/auth", googleRoutes);
+app.use("/api/cart", cartRoutes);
 connectDB()
 app.get('/', (req, res) => {
     res.send('Hello duniyaa');

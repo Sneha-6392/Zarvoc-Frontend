@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import Navbar from '../Components/Navbar'; // Assuming this path is correct
+import Footer from '../Components/Footer'; // Assuming this path is correct
 
 const TrackOrder = () => {
     // State to store user's geolocation
@@ -7,42 +9,65 @@ const TrackOrder = () => {
 
     // State for order details, initialized with default/empty values
     const [orderDetails, setOrderDetails] = useState({
-        orderPlacedDate: 'May 20, 2023', // This can be dynamic too, but for now, it's static
-        total: '₹ 0.00', // Will be fetched from localStorage
-        shipTo: 'Guest', // Will be fetched from localStorage
-        orderNumber: '#N/A', // Will be fetched from localStorage
-        currentStatus: 'Shipping',
-        estimatedDelivery: '29 Jul - 8 Aug',
+        orderPlacedDate: 'N/A',
+        totalAmount: '₹ 0.00',
+        shipTo: 'N/A',
+        orderNumber: '#N/A',
+        paymentMethod: 'N/A', // Added to display payment method
+        currentStatus: 'Order Confirmed', // Default to initial status
+        estimatedDelivery: 'Fetching...',
         timeline: [
-            { status: 'Order Confirmed', completed: true },
-            { status: 'Picked Up', completed: true },
-            { status: 'Shipping', completed: true },
+            { status: 'Order Confirmed', completed: false },
+            { status: 'Picked Up', completed: false },
+            { status: 'Shipping', completed: false },
             { status: 'Out for Delivery', completed: false },
             { status: 'Delivered', completed: false },
         ]
     });
 
+    // **IMPORTANT: Replace with your actual Google Maps API Key**
+    const Maps_API_KEY = 'AIzaSyCNWvc2TPhfLT8QMLdDqUxIaAT9NR-INVA'; // <<<--- Replace this!
+
     useEffect(() => {
         // Fetch order details from localStorage
-        const storedOrderDetails = localStorage.getItem('orderDetails');
-        if (storedOrderDetails) {
+        const storedOrder = localStorage.getItem('lastPlacedOrder');
+        if (storedOrder) {
             try {
-                const parsedDetails = JSON.parse(storedOrderDetails);
+                const parsedOrder = JSON.parse(storedOrder);
+
+                // Update timeline based on payment status or simulated progress
+                let updatedTimeline = orderDetails.timeline.map(item => ({ ...item, completed: false }));
+                let currentStatusText = 'Order Confirmed'; // Default
+
+                if (parsedOrder.paymentStatus === 'Successful' || parsedOrder.paymentMethod === 'cod') {
+                    // Simulate progress after successful payment or COD
+                    updatedTimeline[0].completed = true; // Order Confirmed
+                    updatedTimeline[1].completed = true; // Picked Up (simulated)
+                    updatedTimeline[2].completed = true; // Shipping (simulated)
+                    currentStatusText = 'Shipping'; // Set current status
+                }
+
                 setOrderDetails(prevDetails => ({
                     ...prevDetails,
-                    total: parsedDetails.totalAmount || prevDetails.total,
-                    shipTo: parsedDetails.shipTo || prevDetails.shipTo,
-                    orderNumber: parsedDetails.orderNumber || prevDetails.orderNumber,
-                    // You might want to update currentStatus and estimatedDelivery here too if they are dynamic
+                    orderPlacedDate: parsedOrder.orderDate || 'N/A',
+                    totalAmount: `₹ ${parseFloat(parsedOrder.totalAmount).toFixed(2)}` || '₹ 0.00',
+                    shipTo: parsedOrder.address || 'N/A', // Use the full address
+                    orderNumber: parsedOrder.orderId || '#N/A',
+                    paymentMethod: getPaymentMethodDisplayName(parsedOrder.paymentMethod) || 'N/A', // Display readable payment name
+                    currentStatus: currentStatusText,
+                    timeline: updatedTimeline,
+                    // You might want a more sophisticated way to calculate estimated delivery
+                    estimatedDelivery: 'Approx. 5-7 business days' // This can be dynamic
                 }));
             } catch (error) {
                 console.error("Error parsing order details from localStorage:", error);
-                // Optionally clear invalid data
-                localStorage.removeItem('orderDetails');
+                localStorage.removeItem('lastPlacedOrder'); // Clear invalid data
             }
+        } else {
+            console.warn("No 'lastPlacedOrder' found in localStorage.");
         }
 
-        // Geolocation fetching logic (remains the same)
+        // Geolocation fetching logic
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
@@ -55,16 +80,16 @@ const TrackOrder = () => {
                 (error) => {
                     switch (error.code) {
                         case error.PERMISSION_DENIED:
-                            setLocationError("User denied the request for Geolocation.");
+                            setLocationError("User denied the request for Geolocation. Map may not show your precise location.");
                             break;
                         case error.POSITION_UNAVAILABLE:
-                            setLocationError("Location information is unavailable.");
+                            setLocationError("Location information is unavailable. Map may not show your precise location.");
                             break;
                         case error.TIMEOUT:
-                            setLocationError("The request to get user location timed out.");
+                            setLocationError("The request to get user location timed out. Map may not show your precise location.");
                             break;
                         case error.UNKNOWN_ERROR:
-                            setLocationError("An unknown error occurred while getting location.");
+                            setLocationError("An unknown error occurred while getting location. Map may not show your precise location.");
                             break;
                         default:
                             setLocationError("An error occurred getting your location.");
@@ -78,9 +103,20 @@ const TrackOrder = () => {
                 }
             );
         } else {
-            setLocationError("Geolocation is not supported by your browser.");
+            setLocationError("Geolocation is not supported by your browser. Map may not be fully functional.");
         }
     }, []); // Empty dependency array means this runs once on mount
+
+    // Helper function to get a readable payment method name
+    const getPaymentMethodDisplayName = (method) => {
+        switch (method) {
+            case 'card': return 'Credit/Debit Card';
+            case 'netbanking': return 'Net Banking';
+            case 'upi': return 'UPI';
+            case 'cod': return 'Cash on Delivery';
+            default: return method;
+        }
+    };
 
     // CSS as a string, to be injected into a <style> tag
     const componentStyles = `
@@ -109,31 +145,7 @@ const TrackOrder = () => {
             padding: 20px;
         }
 
-        .tracking-header {
-            background-color: var(--secondary-yellow); /* Yellow header */
-            color: var(--primary-blue);
-            padding: 20px 40px;
-            display: flex;
-            align-items: center;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .tracking-header .logo {
-            margin-right: 20px;
-        }
-
-        .tracking-header .logo img {
-            height: 40px; /* Adjust logo size */
-            width: auto;
-        }
-
-        .tracking-header h1 {
-            margin: 0;
-            font-size: 1.8em;
-            font-weight: bold;
-            color: var(--primary-blue);
-        }
+        /* Removed .tracking-header as it's replaced by Navbar */
 
         /* Browser Mockup Styles */
         .browser-mockup {
@@ -144,6 +156,7 @@ const TrackOrder = () => {
             margin: 0 auto;
             width: 90%;
             max-width: 1200px; /* Adjust max width as needed */
+            margin-top: 30px; /* Added space below Navbar */
         }
 
         .browser-header {
@@ -329,17 +342,6 @@ const TrackOrder = () => {
             color: var(--text-color);
         }
 
-        .timeline-line {
-            position: absolute;
-            top: 35px; /* Adjust to connect dots */
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%; /* Line will be drawn by the parent timeline::before */
-            height: 4px;
-            background-color: var(--secondary-yellow); /* Completed line color */
-            z-index: 0;
-        }
-
         .shipping-information {
             margin-top: 40px;
         }
@@ -377,6 +379,16 @@ const TrackOrder = () => {
         .user-location-info .error {
             color: #d9534f; /* Red for errors */
             font-weight: bold;
+        }
+
+        .copyright {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.8em;
+            color: var(--text-color);
+            margin-top: auto; /* Pushes the copyright to the bottom */
+            background-color: #fff;
+            border-top: 1px solid var(--border-color);
         }
 
         /* Responsive adjustments */
@@ -420,25 +432,33 @@ const TrackOrder = () => {
 
     // Construct the Google Maps URL dynamically based on userLocation
     const getMapSrc = () => {
+        // Default coordinates if userLocation isn't available or there's an error
+        const defaultLatitude = 27.1751; // Example: Taj Mahal latitude
+        const defaultLongitude = 78.0421; // Example: Taj Mahal longitude
+        const zoomLevel = 15; // You can adjust the zoom level
+
+        let lat = defaultLatitude;
+        let lng = defaultLongitude;
+
         if (userLocation) {
-            // This URL will show a Google Map centered on the user's fetched coordinates
-            return `https://maps.google.com/maps?q=$${userLocation.latitude},${userLocation.longitude}&z=15&output=embed`;
+            lat = userLocation.latitude;
+            lng = userLocation.longitude;
         }
-        // Fallback or a default map if location is not available yet
-        return "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d11239.12345!2d77.949999!3d27.175000!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjdEMTdTMzMiIDc3RDU4JzI5LjkiRTc3RDU4JzI5LjkiTjc3RDU4JzI5LjkiRTc3RDU4JzI5LjkiTnM!5e0!3m2!1sen!2sin!4v1625000000000!5m2!1sen!2sin"; // A default map, e.g., Taj Mahal area
+
+        // Using Google Maps Embed API with view mode
+        // The 'q' parameter is for search queries/locations. For specific lat/lng, 'center' and 'zoom' are used with 'view' mode.
+        // It's recommended to use the 'q' parameter with an address or place name for the Embed API to ensure a marker is shown.
+        // If you specifically want to show just the coordinates, 'q' can be `lat,lng`.
+        // Corrected URL: Use embed API with 'q' for location or 'center' and 'zoom' with 'map' mode
+        // For a marker at a specific lat/lng, the 'q' parameter is best.
+        return `https://www.google.com/maps/embed/v1/view?key=${Maps_API_KEY}&center=${lat},${lng}&zoom=${zoomLevel}`;
     };
 
     return (
         <div className="order-tracking-container">
             <style dangerouslySetInnerHTML={{ __html: componentStyles }} />
 
-            <header className="tracking-header">
-                <div className="logo">
-                    {/* You can replace this with your actual logo */}
-                    <img src="your-logo-path.png" alt="UrbanTales Logo" />
-                </div>
-                <h1>ORDER TRACKING PAGE</h1>
-            </header>
+            <Navbar /> {/* Your Navbar component */}
 
             <div className="browser-mockup">
                 <div className="browser-header">
@@ -466,7 +486,11 @@ const TrackOrder = () => {
                         </div>
                         <div className="summary-item">
                             <span>TOTAL AMOUNT</span>
-                            <strong>{orderDetails.total}</strong> {/* Dynamically rendered */}
+                            <strong>{orderDetails.totalAmount}</strong> {/* Dynamically rendered */}
+                        </div>
+                        <div className="summary-item">
+                            <span>PAYMENT METHOD</span> {/* New field */}
+                            <strong>{orderDetails.paymentMethod}</strong> {/* Dynamically rendered */}
                         </div>
                         <div className="summary-item">
                             <span>SHIPPING TO</span>
@@ -521,12 +545,12 @@ const TrackOrder = () => {
                                     <p>Longitude: {userLocation.longitude.toFixed(6)}</p>
                                     <p>
                                         <a
-                                            href={`https://www.google.com/maps?q=$${userLocation.latitude},${userLocation.longitude}`}
+                                            href={`https://www.google.com/maps/search/?api=1&query=${userLocation.latitude},${userLocation.longitude}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             style={{ color: '#070A52', textDecoration: 'underline' }}
                                         >
-                                            View on Map
+                                            View on Google Maps
                                         </a>
                                     </p>
                                 </>
@@ -536,6 +560,11 @@ const TrackOrder = () => {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <Footer /> {/* Your Footer component */}
+            <div className="copyright">
+                <p>© {new Date().getFullYear()} UrbanTales. All rights reserved.</p>
             </div>
         </div>
     );

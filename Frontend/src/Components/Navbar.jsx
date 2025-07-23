@@ -92,7 +92,7 @@ function ProfileMenu({ user, onLogin, onLogout }) {
                 <UserCircle2 className="w-4 h-4" /> Profile
               </Link>
               <Link
-                to="/orders"
+                to="/trackorder"
                 className="flex items-center gap-2 w-full px-3 py-2 hover:bg-gray-100"
                 onClick={() => setOpen(false)}
               >

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { HashLoader } from "react-spinners"; // Import HashLoader
+import Navbar from "../Components/Navbar";
+import Footer from "../Components/Footer";
 
 export default function EditProfile() {
   const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState({
     profileImage: "",
     fullName: "",
@@ -19,16 +21,13 @@ export default function EditProfile() {
   });
 
   useEffect(() => {
-    // Simulate a loading period for 3 seconds
     const timer = setTimeout(() => {
       const savedUser = JSON.parse(localStorage.getItem("user"));
-      if (savedUser) {
-        setUser(savedUser);
-      }
-      setLoading(false); // Set loading to false after the simulated delay
-    }, 3000); // 3 seconds delay
+      if (savedUser) setUser(savedUser);
+      setLoading(false);
+    }, 3000);
 
-    return () => clearTimeout(timer); // Clean up the timer on component unmount
+    return () => clearTimeout(timer);
   }, []);
 
   const handleChange = (e) => {
@@ -36,16 +35,44 @@ export default function EditProfile() {
     setUser((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleImageUpload = (e) => {
+  // ✅ Cloudinary Image Upload
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const imageURL = URL.createObjectURL(file);
-      setUser((prev) => ({ ...prev, profileImage: imageURL }));
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "unsigned_profile"); // Your preset
+    formData.append("folder", "profile/image"); // Folder (optional)
+
+    try {
+      const response = await fetch(
+        "https://api.cloudinary.com/v1_1/dmtgrhnzl/image/upload",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+      const data = await response.json();
+
+      if (response.ok) {
+        const updatedUser = { ...user, profileImage: data.secure_url };
+        setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+      } else {
+        alert("Upload failed");
+        console.error(data);
+      }
+    } catch (err) {
+      console.error("Error uploading image", err);
+      alert("Upload error");
     }
   };
 
   const handleRemoveImage = () => {
-    setUser((prev) => ({ ...prev, profileImage: "" }));
+    const updatedUser = { ...user, profileImage: "" };
+    setUser(updatedUser);
+    localStorage.setItem("user", JSON.stringify(updatedUser));
   };
 
   const handleSave = () => {
@@ -53,24 +80,24 @@ export default function EditProfile() {
     navigate("/profile");
   };
 
-  // Show loader while loading is true
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
-        {/* HashLoader component with customizable color and size */}
         <HashLoader color="#070A52" size={80} />
       </div>
     );
   }
 
   return (
+    <>
+    <Navbar />
     <div className="min-h-screen bg-gradient-to-r from-blue-50 to-blue-100 flex items-center justify-center px-4 py-10">
       <div className="bg-white shadow-2xl rounded-2xl w-full max-w-3xl p-8">
         <h2 className="text-3xl font-bold text-center text-blue-700 mb-8">
           Edit Your Profile
         </h2>
 
-        {/* Profile Image Upload */}
+        {/* Profile Image */}
         <div className="flex flex-col items-center mb-6">
           {user.profileImage ? (
             <img
@@ -82,7 +109,7 @@ export default function EditProfile() {
             <div className="w-32 h-32 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center text-3xl font-bold mb-4 shadow-md">
               {user.fullName
                 .split(" ")
-                .map((word) => word[0]?.toUpperCase())
+                .map((w) => w[0]?.toUpperCase())
                 .join("")}
             </div>
           )}
@@ -154,6 +181,8 @@ export default function EditProfile() {
         </div>
       </div>
     </div>
+    <Footer />
+    </>
   );
 }
 
@@ -174,7 +203,7 @@ function Input({ label, name, value, onChange, type = "text" }) {
   );
 }
 
-// Gender Select Dropdown
+// Gender Dropdown
 function Select({ label, name, value, onChange, options }) {
   return (
     <div>
@@ -187,8 +216,8 @@ function Select({ label, name, value, onChange, options }) {
         required
       >
         <option value="">Choose Gender</option>
-        {options.map((opt, i) => (
-          <option key={i} value={opt}>
+        {options.map((opt, idx) => (
+          <option key={idx} value={opt}>
             {opt}
           </option>
         ))}

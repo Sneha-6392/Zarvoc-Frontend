@@ -9,10 +9,10 @@ import HappyCustomers from "../Components/HappyCustomers";
 import TrendingProducts from "../Components/TrendingProducts";
 import CustomerReviews from "../Components/CustomerReviews";
 import Footer from "../Components/Footer";
-import { HashLoader } from "react-spinners"; // Import HashLoader
-// import logo from "../assets/Zarvoc2.png"; // No longer needed for loader if only used for loader
+import { HashLoader } from "react-spinners"; 
 import BrandMarquee from "./BrandMarquee";
-import Ai from "../Components/Ai";
+import bannerImage from "../assets/coupon.png"; // Import the banner image
+
 
 function LandingPage() {
   const [loading, setLoading] = useState(true);
@@ -38,6 +38,14 @@ function LandingPage() {
       <HeroBanner />
       <CategoryCircles />
       <BestSellers />
+       <div className="w-full">
+      {/* Banner Image */}
+      <img 
+        src={bannerImage} 
+        alt="Discount Banner" 
+        className="w-full object-cover"
+      />
+      </div>
       <ProductGrid />
       <BrandMarquee />
       <PromoGrid />
