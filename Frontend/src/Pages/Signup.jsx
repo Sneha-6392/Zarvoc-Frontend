@@ -5,7 +5,7 @@ import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 
 const BASE_API_URL =
-  import.meta.env.VITE_BACKEND_API_URL || {import.meta.env.VITE_API_URL};
+  import.meta.env.VITE_BACKEND_API_URL || import.meta.env.VITE_API_URL;
 
 const Signup = () => {
   const [formData, setFormData] = useState({
