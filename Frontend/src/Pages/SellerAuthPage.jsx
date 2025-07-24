@@ -72,8 +72,8 @@ const SellerLogin = () => {
     e.preventDefault();
     setError("");
     const url = isSignup
-      ? "http://localhost:3000/api/sellers/signup"
-      : "http://localhost:3000/api/sellers/login";
+      ? `${import.meta.env.VITE_API_URL}/sellers/signup`
+      : `${import.meta.env.VITE_API_URL}/sellers/login`;
 
     try {
       const { data } = await axios.post(url, formData);
@@ -94,7 +94,7 @@ const SellerLogin = () => {
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/auth/google-seller",
+        `${import.meta.env.VITE_API_URL}/auth/google-seller`,
         {
           token: credentialResponse.credential
         }

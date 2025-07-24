@@ -7,7 +7,7 @@ import { auth, provider } from '../../utils/firebase';
 import Navbar from '../Components/Navbar';
 import Footer from '../Components/Footer';
 
-const BASE_API_URL = import.meta.env.VITE_BACKEND_API_URL || 'http://localhost:3000';
+const BASE_API_URL = import.meta.env.VITE_BACKEND_API_URL || import.meta.env.VITE_API_URL;
 
 const Login = () => {
     const [email, setEmail] = useState('');

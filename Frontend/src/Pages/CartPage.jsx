@@ -21,7 +21,7 @@ export default function CartPage() {
     }
 
     setLoading(true);
-    fetch(`http://localhost:3000/api/cart/${userId}`)
+    fetch(`${import.meta.env.VITE_API_URL}/cart/${userId}`)
       .then(res => res.json())
       .then(data => {
         setCartItems(data.items || []);
@@ -46,7 +46,7 @@ export default function CartPage() {
 
   const updateQty = (itemId, qty) => {
     if (qty < 1) qty = 1;
-    fetch(`http://localhost:3000/api/cart/update`, {
+    fetch(`${import.meta.env.VITE_API_URL}/cart/update`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId, itemId, qty })
@@ -62,7 +62,7 @@ export default function CartPage() {
   };
 
   const deleteItem = (itemId) => {
-    fetch(`http://localhost:3000/api/cart/remove`, {
+    fetch(`${import.meta.env.VITE_API_URL}/cart/remove`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId, itemId })

@@ -47,7 +47,7 @@ const SellerForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await fetch("http://localhost:3000/api/sellers/signup", {
+      await fetch(`${import.meta.env.VITE_API_URL}/sellers/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

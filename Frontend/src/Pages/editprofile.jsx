@@ -90,7 +90,7 @@ export default function EditProfile() {
         return;
       }
 
-      const res = await fetch("http://localhost:3000/api/users/profile", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/users/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

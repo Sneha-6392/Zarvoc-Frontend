@@ -25,7 +25,7 @@ const ProductDetails = () => {
     // Set a timeout to hide the loader after 3 seconds
     const timer = setTimeout(() => setLoading(false), 3000); // Changed to 3000ms for 3 seconds
 
-    fetch("http://localhost:3000/api/products/")
+    fetch("${import.meta.env.VITE_API_URL}/products/")
       .then((res) => res.json())
       .then((data) => {
         setProducts(data);
@@ -50,7 +50,7 @@ const ProductDetails = () => {
     e.preventDefault();
     if (isAddBtnDisabled) return;
 
-    fetch("http://localhost:3000/api/products", {
+    fetch("${import.meta.env.VITE_API_URL}/products", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData)

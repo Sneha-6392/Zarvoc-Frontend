@@ -18,7 +18,7 @@ const Category = () => {
       return;
     }
 
-    fetch(`http://localhost:3000/api/products/${category}`)
+    fetch(`${import.meta.env.VITE_API_URL}/products/${category}`)
       .then((res) => res.json())
       .then((data) => {
         setProducts(data);
@@ -42,7 +42,7 @@ const Category = () => {
     const item = { id, name, price, image, qty: 1 };
 
     try {
-      const res = await fetch("http://localhost:3000/api/cart/add", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/cart/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, item }),

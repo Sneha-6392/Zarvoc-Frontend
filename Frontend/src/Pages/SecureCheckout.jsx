@@ -59,7 +59,7 @@ const SecureCheckout = () => {
 
       try {
         // Fetch cart data from your backend API
-        const res = await fetch(`http://localhost:3000/api/cart/${userId}`);
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/cart/${userId}`);
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
@@ -145,7 +145,7 @@ const SecureCheckout = () => {
       const totalAmountInPaise = Math.round(discountedTotal * 100); // Razorpay expects amount in paise
 
       // Request order creation from your backend
-      const res = await fetch('http://localhost:3000/api/razorpay/order', {
+      const res = await fetch('${import.meta.env.VITE_API_URL}/razorpay/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: totalAmountInPaise })
