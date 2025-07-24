@@ -9,7 +9,7 @@ import {
   UserCircle2,
   PackageSearch,
 } from "lucide-react"; // lucide-react icons
-import urbanTalesLogo from "../assets/UrbanTales.png"; // your logo path
+import urbanTalesLogo from "../assets/urbantales.png" // your logo path
 
 const NAV_ITEMS = [
   { label: "Home", href: "/" },
