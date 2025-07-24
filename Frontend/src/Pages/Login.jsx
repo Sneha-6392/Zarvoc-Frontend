@@ -7,8 +7,6 @@ import { auth, provider } from '../../utils/firebase';
 import Navbar from '../Components/Navbar';
 import Footer from '../Components/Footer';
 
-const BASE_API_URL = import.meta.env.VITE_BACKEND_API_URL || import.meta.env.VITE_API_URL;
-
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -18,7 +16,7 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const { data } = await axios.post(`${BASE_API_URL}/api/users/login`, {
+            const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/users/login`, {
                 email,
                 password,
             });
@@ -41,7 +39,7 @@ const Login = () => {
             const result = await signInWithPopup(auth, provider);
             const idToken = await result.user.getIdToken();
 
-            const response = await axios.post(`${BASE_API_URL}/api/auth/google-firebase`, {
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/google-firebase`, {
                 token: idToken,
             });
 
