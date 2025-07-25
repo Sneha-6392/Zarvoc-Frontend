@@ -7,7 +7,6 @@ import Footer from '../Components/Footer';
 const SecureCheckout = () => {
   const navigate = useNavigate();
 
-  // State for form inputs and UI logic
   const [selectedPayment, setSelectedPayment] = useState('');
   const [couponCode, setCouponCode] = useState('');
   const [upiId, setUpiId] = useState('');
@@ -26,72 +25,49 @@ const SecureCheckout = () => {
     state: ''
   });
 
-  // Derived state for button enablement and validations
   const isCouponValid = couponCode.trim() !== '';
   const isUpiValid = upiId.trim() !== '';
-  const isAddressComplete =
-    userInfo.name && userInfo.mobile && userInfo.address && userInfo.city && userInfo.pincode && userInfo.state;
+  const isAddressComplete = userInfo.name && userInfo.mobile && userInfo.address && userInfo.city && userInfo.pincode && userInfo.state;
 
-  const isPayButtonEnabled =
-    selectedPayment &&
-    (selectedPayment !== 'upi' || (isUpiValid && isUpiVerified)) &&
-    isAddressComplete &&
-    !isEditingAddress;
+  const isPayButtonEnabled = selectedPayment && (selectedPayment !== 'upi' || (isUpiValid && isUpiVerified)) && isAddressComplete && !isEditingAddress;
 
-  // Simulate initial loading for a better user experience
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 3000);
     return () => clearTimeout(timer);
   }, []);
 
-  // Fetch subtotal from cart and load saved user info on component mount
   useEffect(() => {
     const fetchSubtotal = async () => {
       const storedUser = JSON.parse(localStorage.getItem('user'));
       const userId = storedUser?.id;
-
       if (!userId) {
-        // Fallback or default subtotal if user is not logged in or cart cannot be fetched
-        console.warn('User ID not found in localStorage. Using default subtotal.');
-        setSubtotal(500); // Example default subtotal
+        setSubtotal(500);
         return;
       }
-
       try {
-        // Fetch cart data from your backend API
         const res = await fetch(`${import.meta.env.VITE_API_URL}/cart/${userId}`);
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const data = await res.json();
-        // Calculate sum of items based on price and quantity
         const sum = data.items?.reduce((acc, item) => acc + item.price * item.qty, 0) || 0;
         setSubtotal(sum);
       } catch (err) {
         console.error('Failed to fetch cart subtotal:', err);
-        setSubtotal(500); // Fallback to a default subtotal on error
+        setSubtotal(500);
       }
     };
 
     fetchSubtotal();
-
-    // Load saved user info from localStorage if available
     const savedUserInfo = JSON.parse(localStorage.getItem('checkoutUserInfo'));
-    if (savedUserInfo) {
-      setUserInfo(savedUserInfo);
-    }
+    if (savedUserInfo) setUserInfo(savedUserInfo);
   }, []);
 
-  // Save userInfo to local storage whenever it changes
   useEffect(() => {
     localStorage.setItem('checkoutUserInfo', JSON.stringify(userInfo));
   }, [userInfo]);
 
-  // Function to apply coupon code
   const applyCoupon = () => {
     const code = couponCode.trim().toUpperCase();
     if (code === 'URBANTALES' || code === 'AJ001') {
-      // Apply 20% discount on (subtotal + delivery charge)
       setDiscount((subtotal + 50) * 0.2);
       alert('✅ Coupon Applied: 20% discount');
     } else {
@@ -100,89 +76,74 @@ const SecureCheckout = () => {
     }
   };
 
-  // Handle payment method selection
   const handlePaymentSelect = (e) => {
     setSelectedPayment(e.target.value);
-    setIsUpiVerified(false); // Reset UPI verification on payment method change
+    setIsUpiVerified(false);
   };
 
-  // Function to save order details to localStorage and navigate
+  const discountedTotal = subtotal + 50 - discount;
+
   const saveOrderDetailsAndNavigate = (paymentStatus) => {
     const orderDetails = {
-      orderId: `ORD-${Date.now()}`, // Simple unique ID (for demonstration)
+      orderId: `ORD-${Date.now()}`,
       name: userInfo.name,
-      mobile: userInfo.mobile, // Save mobile
+      mobile: userInfo.mobile,
       address: `${userInfo.address}, ${userInfo.city}, ${userInfo.state} - ${userInfo.pincode}`,
-      totalAmount: discountedTotal.toFixed(2), // Ensure amount is formatted, rename to totalAmount for clarity
-      paymentMethod: selectedPayment, // Save the raw selectedPayment value
-      paymentStatus: paymentStatus, // "Successful" or "Pending" etc.
+      totalAmount: discountedTotal.toFixed(2),
+      paymentMethod: selectedPayment,
+      paymentStatus: paymentStatus,
       instructions: instructions,
-      orderDate: new Date().toLocaleString() // Current date and time
+      orderDate: new Date().toLocaleString()
     };
-    // Save these details to a new key 'lastPlacedOrder'
     localStorage.setItem('lastPlacedOrder', JSON.stringify(orderDetails));
-    navigate('/orderconfirmed'); // Navigate to the order confirmation page
+    navigate('/orderconfirmed');
   };
 
-  // Handle Razorpay (and COD) payment initiation
   const handleRazorpayPayment = async () => {
-    // Validate address fields before proceeding
     if (!isAddressComplete) {
       alert('Please fill in all address details before proceeding with payment.');
-      setIsEditingAddress(true); // Open address editing if fields are missing
+      setIsEditingAddress(true);
       return;
     }
-
-    // Handle Cash on Delivery (COD) payment
     if (selectedPayment === 'cod') {
       alert('✅ Cash on Delivery selected! Your order will be confirmed.');
-      saveOrderDetailsAndNavigate('Pending'); // For COD, payment is pending until delivery
+      saveOrderDetailsAndNavigate('Pending');
       return;
     }
-
-    // Handle online payments via Razorpay
     try {
-      const totalAmountInPaise = Math.round(discountedTotal * 100); // Razorpay expects amount in paise
-
-      // Request order creation from your backend
-      const res = await fetch('${import.meta.env.VITE_API_URL}/razorpay/order', {
+      const totalAmountInPaise = Math.round(discountedTotal * 100);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/razorpay/order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: totalAmountInPaise })
       });
-
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(`Backend error creating Razorpay order: ${errorData.message || res.statusText}`);
+        console.error('❌ Razorpay backend error:', errorData);
+        throw new Error(`Backend error: ${errorData.error || res.statusText}`);
       }
-
       const orderData = await res.json();
-
-      // Razorpay options for the payment popup
       const options = {
-        key: 'rzp_test_QMG1XV6hszJZlA', // Your Razorpay Key ID from environment variables or config
-        amount: orderData.amount, // Amount received from your backend
+        key: 'rzp_test_QMG1XV6hszJZlA',
+        amount: orderData.amount,
         currency: orderData.currency,
         name: 'UrbanTales',
         description: 'Order Payment',
-        order_id: orderData.id, // Order ID from your backend
+        order_id: orderData.id,
         handler: function (response) {
-          // This function executes on successful payment
           alert('✅ Payment successful! Your order has been placed.');
-          saveOrderDetailsAndNavigate('Successful'); // Save details and navigate to confirmation
+          saveOrderDetailsAndNavigate('Successful');
         },
         prefill: {
           name: userInfo.name,
-          email: 'customer@example.com', // Replace with actual user email if available
+          email: 'customer@example.com',
           contact: userInfo.mobile
         },
         theme: {
-          color: '#070A52' // Custom theme color
+          color: '#070A52'
         },
-        image: 'https://seeklogo.com/images/R/razorpay-logo-B4B31B7918-seeklogo.com.png' // Your company logo
+        image: 'https://seeklogo.com/images/R/razorpay-logo-B4B31B7918-seeklogo.com.png'
       };
-
-      // Create and open the Razorpay payment instance
       const razor = new window.Razorpay(options);
       razor.open();
     } catch (err) {
@@ -191,7 +152,6 @@ const SecureCheckout = () => {
     }
   };
 
-  // Show loading spinner while component is initializing
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
@@ -200,13 +160,9 @@ const SecureCheckout = () => {
     );
   }
 
-  // Calculate the total amount after discount and delivery charges
-  const discountedTotal = subtotal + 50 - discount; // Assuming 50 is a fixed delivery charge
-
   return (
     <div className="bg-gray-200 text-gray-800 min-h-screen flex flex-col justify-between">
       <Navbar />
-
       <div className="flex-grow">
         <header className="bg-white flex justify-between items-center px-6 py-4 shadow">
           <div className="text-xl font-bold text-[#070A52]">Checkout</div>
@@ -482,11 +438,9 @@ const SecureCheckout = () => {
           </aside>
         </main>
       </div>
-
       <Footer />
     </div>
   );
 };
-
 
 export default SecureCheckout;

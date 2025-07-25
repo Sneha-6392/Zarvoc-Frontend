@@ -20,9 +20,9 @@ const Login = () => {
                 email,
                 password,
             });
-            console.log("login data " , data);
-            
-            
+            console.log("login data ", data);
+
+
             localStorage.setItem('isLoggedIn', true);
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
@@ -95,9 +95,9 @@ const Login = () => {
                                     <input type="checkbox" className="mr-2" />
                                     Keep me logged in
                                 </label>
-                                <a href="#" className="text-sm text-blue-600 hover:underline">
+                                {/* <a href="#" className="text-sm text-blue-600 hover:underline">
                                     Forgot password
-                                </a>
+                                </a> */}
                             </div>
 
                             <button
@@ -110,15 +110,18 @@ const Login = () => {
 
                         <p className="mt-4 text-center text-sm text-gray-600">
                             Don’t have an account?{' '}
-                            <a href="/register" className="text-blue-600 hover:underline">
+                            <span
+                                onClick={() => navigate('/register')}
+                                className="text-blue-600 hover:underline cursor-pointer"
+                            >
                                 Sign up
-                            </a>
+                            </span>
                         </p>
                     </div>
 
                     {/* Right Section: Illustration */}
                     <div className="w-full md:w-1/2 bg-blue-50 flex items-center justify-center p-6 relative">
-                        
+
                         <img
                             src="https://i.pinimg.com/736x/b5/a9/78/b5a9786bab9f1536f9a1e0b6e8d8c594.jpg"
                             alt="Illustration"
