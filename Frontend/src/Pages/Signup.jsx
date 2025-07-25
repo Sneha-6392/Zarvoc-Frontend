@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 
-const BASE_API_URL =import.meta.env.VITE_API_URL;
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -34,7 +33,7 @@ const Signup = () => {
 
     try {
       const { data } = await axios.post(
-        `${BASE_API_URL}/api/users/signup`,
+        `${import.meta.env.VITE_API_URL}/users/signup`,
         formData
       );
 
