@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Navbar from '../Components/Navbar'; 
+import Footer from '../Components/Footer';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet'; 
 delete L.Icon.Default.prototype._getIconUrl;
