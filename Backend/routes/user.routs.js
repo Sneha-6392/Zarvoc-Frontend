@@ -5,7 +5,7 @@ import { updateProfile } from '../controllers/User.Controller.js'; // Import the
 
 const router = express.Router();
 
-router.post('/signup', signup);
+router.post('/register', signup);
 router.post('/login', login);
 router.put("/profile", verifyToken, updateProfile); // PUT /api/user/profile
 
