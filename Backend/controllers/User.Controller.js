@@ -2,7 +2,7 @@ import User from "../models/user.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = "your_jwt_secret"; // Use process.env.JWT_SECRET in production
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Signup Controller
 export const signup = async (req, res) => {
