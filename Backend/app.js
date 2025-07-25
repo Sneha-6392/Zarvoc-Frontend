@@ -14,7 +14,10 @@ import cartRoutes from "./routes/Cart.routes.js";
 dotenv.config();
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin: ['http://localhost:5173', 'https://urbantales-five.vercel.app/'],
+    credentials: true, 
+}));
 app.use('/api/users', userRoutes);
 app.use('/api', productRoutes);
 app.use("/api/sellers", sellerRoutes);
