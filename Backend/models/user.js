@@ -1,4 +1,6 @@
-import mongoose from "mongoose";
+// models/User.js
+import mongoose from 'mongoose';
+
 const userSchema = new mongoose.Schema({
   fullName: { type: String, required: true },
   email: {
@@ -24,11 +26,9 @@ const userSchema = new mongoose.Schema({
       createdAt: { type: Date, default: Date.now }
     }
   ],
-  
   createdAt: { type: Date, default: Date.now },
-  
 }, {
   timestamps: true
 });
 
-export default mongoose.model('User', userSchema); 
+export default mongoose.model('User', userSchema);
